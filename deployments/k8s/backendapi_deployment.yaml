@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: om-backend
-        image: gcr.io/open-match-public-images/openmatch-backendapi:dev
-        imagePullPolicy: Always
+        image: gcr.io/open-match-public-images/openmatch-backendapi
+        #imagePullPolicy: Always
         ports:
         - name: grpc
           containerPort: 50505

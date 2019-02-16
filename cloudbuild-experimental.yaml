@@ -1,0 +1,30 @@
+steps:
+- name: 'ubuntu'
+  args: ["bash", "-c", "echo 'FROM gcr.io/cloud-builders/docker\nRUN apt-get -qq -y install sudo cmake build-essential git autoconf automake libtool curl build-essential\nENTRYPOINT [\"/usr/bin/make\"]' > Dockerfile.build"]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-f', 'Dockerfile.build', '-t', 'make', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-f', 'Dockerfile.build', '-t', 'make', '.']
+- name: 'make'
+  args: ['install-go']
+- name: 'make'
+  args: ['all']
+- name: 'make'
+  args: ['push-images']
+- name: 'make'
+  args: ['install-helm']
+- name: 'make'
+  args: ['push-helm']
+- name: 'make'
+  args: ['install-chart']
+- name: 'golang'
+  env: ['GO111MODULE=on']
+  args: ['go', 'build', './...']
+- name: 'golang'
+  env: ['GO111MODULE=on']
+  args: ['go', 'build', 'cmd/backendapi/main.go']
+- name: 'golang'
+  env: ['GO111MODULE=on']
+  args: ['go', 'test', './...']
+- name: 'docker'
+  args: ['build', '-f', 'cmd/backendapi/Dockerfile', '-t', 'gcr.io/$PROJECT_ID/openmatch-backendapi:0.4', '.']

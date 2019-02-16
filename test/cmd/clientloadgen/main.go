@@ -40,6 +40,8 @@ func main() {
 	// redis://user:secret@localhost:6379/0?foo=bar&qux=baz
 	redisURL := "redis://" + conf.GetString("REDIS_SERVICE_HOST") + ":" + conf.GetString("REDIS_SERVICE_PORT")
 
+	fmt.Printf("Connecting to %s", redisURL)
+
 	pool := redis.Pool{
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,

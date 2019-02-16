@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: om-mmforc
-        image: gcr.io/open-match-public-images/openmatch-mmforc:dev
-        imagePullPolicy: Always
+        image: gcr.io/open-match-public-images/openmatch-mmforc
+        #imagePullPolicy: Always
         ports:
         - name: metrics
           containerPort: 9555

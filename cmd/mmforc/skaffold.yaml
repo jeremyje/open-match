@@ -1,0 +1,17 @@
+apiVersion: skaffold/v1beta5
+kind: Config
+build:
+  artifacts:
+  - image: gcr.io/open-match-public-images/openmatch-mmforc
+    context: ../../
+    sync:
+      '*.go': ../../
+    docker:
+      # Dockerfile's location relative to workspace. Defaults to "Dockerfile"
+      dockerfile: cmd/mmforc/Dockerfile
+deploy:
+  kubectl:
+    manifests:
+    - "../../deployments/k8s/mmforc*.yaml"
+    - "../../deployments/k8s/redis*.yaml"
+    #- "../../deployments/k8s/prom*.yaml"

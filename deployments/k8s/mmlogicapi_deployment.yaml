@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
       - name: om-mmlogic
-        image: gcr.io/open-match-public-images/openmatch-mmlogicapi:dev
-        imagePullPolicy: Always
+        image: gcr.io/open-match-public-images/openmatch-mmlogicapi
+        #imagePullPolicy: Always
         ports:
         - name: grpc
           containerPort: 50503

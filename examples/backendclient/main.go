@@ -90,12 +90,15 @@ func main() {
 		panic(err)
 	}
 
-	conn, err := grpc.Dial(ip[0]+":50505", grpc.WithInsecure())
+	grpcAddress := ip[0] + ":50505"
+	log.Printf("Connecting to BackendAPI at %s\n", grpcAddress)
+
+	conn, err := grpc.Dial(grpcAddress, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("failed to connect: %s", err.Error())
 	}
 	client := backend.NewBackendClient(conn)
-	log.Println("API client connected to", ip[0]+":50505")
+	log.Println("API client connected to", grpcAddress)
 
 	profileName := "test-dm-usc1f"
 	_ = profileName
