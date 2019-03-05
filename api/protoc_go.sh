@@ -15,6 +15,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 cd $GOPATH/src
 protoc \
 ${GOPATH}/src/github.com/GoogleCloudPlatform/open-match/api/protobuf-spec/backend.proto \
