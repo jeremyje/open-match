@@ -9,3 +9,6 @@ WORKDIR /go/src/github.com/GoogleCloudPlatform/open-match/internal
 RUN go get -d -v ...
 
 
+
+
+
