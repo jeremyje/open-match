@@ -24,6 +24,26 @@
  
  
  
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
 cd $GOPATH/src
 protoc \
 ${GOPATH}/src/github.com/GoogleCloudPlatform/open-match/api/protobuf-spec/backend.proto \
