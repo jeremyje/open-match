@@ -7,3 +7,5 @@ RUN rm -f config/matchmaker_config.yaml
 COPY internal internal
 WORKDIR /go/src/github.com/GoogleCloudPlatform/open-match/internal
 RUN go get -d -v ...
+
+
