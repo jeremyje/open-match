@@ -7,3 +7,10 @@ steps:
             '.'
         ]
 images: ['gcr.io/$PROJECT_ID/openmatch-mmf-php-mmlogic-simple']
+
+
+
+
+
+
+
