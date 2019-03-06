@@ -7,6 +7,18 @@
  - This paves the way for CI/CD in an upcoming version.  
  - This paves the way for public images in an upcoming version!
 
+
+
+
+
+
+
+
+
+
+
+
+
 ## v0.3.0 (alpha)
   This update is focused on the Frontend API and Player Records, including more robust code for indexing, deindexing, reading, writing, and expiring player requests from Open Match state storage.  All Frontend API function argument have changed, although many only slightly. Please join the [Slack channel](https://open-match.slack.com/) if you need help ([Signup link](https://join.slack.com/t/open-match/shared_invite/enQtNDM1NjcxNTY4MTgzLWQzMzE1MGY5YmYyYWY3ZjE2MjNjZTdmYmQ1ZTQzMmNiNGViYmQyN2M4ZmVkMDY2YzZlOTUwMTYwMzI1Y2I2MjU))!
 
