@@ -4,6 +4,10 @@ metadata:
   name: redisfailover
   labels:
     tier: storage
+    
+    
+    
+    
 spec:
   hardAntiAffinity: true                     # Optional. Value by default. If true, the pods will not be scheduled on the same node.
   sentinel:
