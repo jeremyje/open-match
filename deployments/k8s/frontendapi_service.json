@@ -9,6 +9,9 @@
       "app": "openmatch",
       "component": "frontend"
     },
+    
+    
+    
     "ports": [
       {
         "protocol": "TCP",
