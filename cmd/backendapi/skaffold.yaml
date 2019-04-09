@@ -1,0 +1,15 @@
+apiVersion: skaffold/v1beta5
+kind: Config
+build:
+  artifacts:
+  - image: gcr.io/open-match-public-images/openmatch-backendapi
+    context: ../../
+    sync:
+      '*.go': ../../
+    docker:
+      # Dockerfile's location relative to workspace. Defaults to "Dockerfile"
+      dockerfile: cmd/backendapi/Dockerfile
+deploy:
+  kubectl:
+    manifests:
+    - "../../deployments/k8s/backendapi*.yaml"
