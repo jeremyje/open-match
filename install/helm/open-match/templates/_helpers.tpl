@@ -46,3 +46,31 @@ Create chart name and version as used by the chart label.
 {{- define "openmatch.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
+
+{{/*
+Render chart metadata labels unless "openmatch.noChartMeta" is set.
+Expects to find in a scope a field "indent" with an integer value to pass to function "nindent".
+*/}}
+{{- define "openmatch.chartmeta" -}}
+{{- if not .Values.openmatch.noChartMeta -}}
+{{- include "openmatch.chartmetalabels" . | nindent .indent }}
+{{- end }}
+{{- end -}}
+
+{{/*
+Print chart metadata labels: "chart", "release", "heritage".
+*/}}
+{{- define "openmatch.chartmetalabels" -}}
+chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+release: {{ .Release.Name }}
+heritage: {{ .Release.Service }}
+{{- end -}}
+
+
+{{- define "prometheus.annotations" -}}
+{{- if and (.Values.openmatch.metrics.prometheusServiceDiscovery) (.Values.openmatch.metrics.prometheusEnabled) -}}
+prometheus.io/scrape: "true"
+prometheus.io/port: {{ .Values.openmatch.metrics.port | quote }}
+prometheus.io/path: {{ .Values.openmatch.metrics.path }}
+{{- end -}}
+{{- end -}}

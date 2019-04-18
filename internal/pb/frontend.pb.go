@@ -7,6 +7,7 @@ import (
 	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	math "math"
 )
@@ -22,23 +23,257 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type CreatePlayerRequest struct {
+	Player               *Player  `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreatePlayerRequest) Reset()         { *m = CreatePlayerRequest{} }
+func (m *CreatePlayerRequest) String() string { return proto.CompactTextString(m) }
+func (*CreatePlayerRequest) ProtoMessage()    {}
+func (*CreatePlayerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{0}
+}
+
+func (m *CreatePlayerRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreatePlayerRequest.Unmarshal(m, b)
+}
+func (m *CreatePlayerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreatePlayerRequest.Marshal(b, m, deterministic)
+}
+func (m *CreatePlayerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreatePlayerRequest.Merge(m, src)
+}
+func (m *CreatePlayerRequest) XXX_Size() int {
+	return xxx_messageInfo_CreatePlayerRequest.Size(m)
+}
+func (m *CreatePlayerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreatePlayerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreatePlayerRequest proto.InternalMessageInfo
+
+func (m *CreatePlayerRequest) GetPlayer() *Player {
+	if m != nil {
+		return m.Player
+	}
+	return nil
+}
+
+type CreatePlayerResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreatePlayerResponse) Reset()         { *m = CreatePlayerResponse{} }
+func (m *CreatePlayerResponse) String() string { return proto.CompactTextString(m) }
+func (*CreatePlayerResponse) ProtoMessage()    {}
+func (*CreatePlayerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{1}
+}
+
+func (m *CreatePlayerResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreatePlayerResponse.Unmarshal(m, b)
+}
+func (m *CreatePlayerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreatePlayerResponse.Marshal(b, m, deterministic)
+}
+func (m *CreatePlayerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreatePlayerResponse.Merge(m, src)
+}
+func (m *CreatePlayerResponse) XXX_Size() int {
+	return xxx_messageInfo_CreatePlayerResponse.Size(m)
+}
+func (m *CreatePlayerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreatePlayerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreatePlayerResponse proto.InternalMessageInfo
+
+type DeletePlayerRequest struct {
+	Player               *Player  `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeletePlayerRequest) Reset()         { *m = DeletePlayerRequest{} }
+func (m *DeletePlayerRequest) String() string { return proto.CompactTextString(m) }
+func (*DeletePlayerRequest) ProtoMessage()    {}
+func (*DeletePlayerRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{2}
+}
+
+func (m *DeletePlayerRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeletePlayerRequest.Unmarshal(m, b)
+}
+func (m *DeletePlayerRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeletePlayerRequest.Marshal(b, m, deterministic)
+}
+func (m *DeletePlayerRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeletePlayerRequest.Merge(m, src)
+}
+func (m *DeletePlayerRequest) XXX_Size() int {
+	return xxx_messageInfo_DeletePlayerRequest.Size(m)
+}
+func (m *DeletePlayerRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeletePlayerRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeletePlayerRequest proto.InternalMessageInfo
+
+func (m *DeletePlayerRequest) GetPlayer() *Player {
+	if m != nil {
+		return m.Player
+	}
+	return nil
+}
+
+type DeletePlayerResponse struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *DeletePlayerResponse) Reset()         { *m = DeletePlayerResponse{} }
+func (m *DeletePlayerResponse) String() string { return proto.CompactTextString(m) }
+func (*DeletePlayerResponse) ProtoMessage()    {}
+func (*DeletePlayerResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{3}
+}
+
+func (m *DeletePlayerResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DeletePlayerResponse.Unmarshal(m, b)
+}
+func (m *DeletePlayerResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DeletePlayerResponse.Marshal(b, m, deterministic)
+}
+func (m *DeletePlayerResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DeletePlayerResponse.Merge(m, src)
+}
+func (m *DeletePlayerResponse) XXX_Size() int {
+	return xxx_messageInfo_DeletePlayerResponse.Size(m)
+}
+func (m *DeletePlayerResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DeletePlayerResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DeletePlayerResponse proto.InternalMessageInfo
+
+type GetUpdatesRequest struct {
+	Player               *Player  `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetUpdatesRequest) Reset()         { *m = GetUpdatesRequest{} }
+func (m *GetUpdatesRequest) String() string { return proto.CompactTextString(m) }
+func (*GetUpdatesRequest) ProtoMessage()    {}
+func (*GetUpdatesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{4}
+}
+
+func (m *GetUpdatesRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUpdatesRequest.Unmarshal(m, b)
+}
+func (m *GetUpdatesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUpdatesRequest.Marshal(b, m, deterministic)
+}
+func (m *GetUpdatesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUpdatesRequest.Merge(m, src)
+}
+func (m *GetUpdatesRequest) XXX_Size() int {
+	return xxx_messageInfo_GetUpdatesRequest.Size(m)
+}
+func (m *GetUpdatesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUpdatesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUpdatesRequest proto.InternalMessageInfo
+
+func (m *GetUpdatesRequest) GetPlayer() *Player {
+	if m != nil {
+		return m.Player
+	}
+	return nil
+}
+
+type GetUpdatesResponse struct {
+	Player               *Player  `protobuf:"bytes,1,opt,name=player,proto3" json:"player,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetUpdatesResponse) Reset()         { *m = GetUpdatesResponse{} }
+func (m *GetUpdatesResponse) String() string { return proto.CompactTextString(m) }
+func (*GetUpdatesResponse) ProtoMessage()    {}
+func (*GetUpdatesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_6805b20a50ffa9ae, []int{5}
+}
+
+func (m *GetUpdatesResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetUpdatesResponse.Unmarshal(m, b)
+}
+func (m *GetUpdatesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetUpdatesResponse.Marshal(b, m, deterministic)
+}
+func (m *GetUpdatesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetUpdatesResponse.Merge(m, src)
+}
+func (m *GetUpdatesResponse) XXX_Size() int {
+	return xxx_messageInfo_GetUpdatesResponse.Size(m)
+}
+func (m *GetUpdatesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetUpdatesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetUpdatesResponse proto.InternalMessageInfo
+
+func (m *GetUpdatesResponse) GetPlayer() *Player {
+	if m != nil {
+		return m.Player
+	}
+	return nil
+}
+
+func init() {
+	proto.RegisterType((*CreatePlayerRequest)(nil), "api.CreatePlayerRequest")
+	proto.RegisterType((*CreatePlayerResponse)(nil), "api.CreatePlayerResponse")
+	proto.RegisterType((*DeletePlayerRequest)(nil), "api.DeletePlayerRequest")
+	proto.RegisterType((*DeletePlayerResponse)(nil), "api.DeletePlayerResponse")
+	proto.RegisterType((*GetUpdatesRequest)(nil), "api.GetUpdatesRequest")
+	proto.RegisterType((*GetUpdatesResponse)(nil), "api.GetUpdatesResponse")
+}
+
 func init() { proto.RegisterFile("api/protobuf-spec/frontend.proto", fileDescriptor_6805b20a50ffa9ae) }
 
 var fileDescriptor_6805b20a50ffa9ae = []byte{
-	// 201 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0xcf, 0x3d, 0x6b, 0xc3, 0x30,
-	0x10, 0xc6, 0x71, 0x9b, 0x42, 0x29, 0xa2, 0x43, 0xf1, 0xe8, 0xa9, 0x78, 0xb7, 0x55, 0xfa, 0x42,
-	0xf7, 0xba, 0xd4, 0xab, 0x29, 0x74, 0xe9, 0x76, 0xb2, 0xcf, 0xb6, 0x40, 0xd2, 0x09, 0xe9, 0x34,
-	0xf4, 0x3b, 0xf5, 0x43, 0x86, 0xd8, 0x21, 0x64, 0x08, 0x81, 0xac, 0x7f, 0x9e, 0xdf, 0xf0, 0x88,
-	0x47, 0xf0, 0x5a, 0xfa, 0x40, 0x4c, 0x2a, 0x4d, 0x75, 0xf4, 0x38, 0xc8, 0x29, 0x90, 0x63, 0x74,
-	0x63, 0xb3, 0xe6, 0xe2, 0x06, 0xbc, 0x2e, 0xcf, 0xcc, 0x2c, 0xc6, 0x08, 0x33, 0xc6, 0x6d, 0xf6,
-	0xfc, 0x9f, 0x8b, 0xbb, 0xaf, 0x83, 0x2c, 0x5e, 0xc5, 0x7d, 0x1b, 0x10, 0x18, 0x7b, 0x03, 0x7f,
-	0x18, 0x8a, 0x87, 0xe6, 0xb8, 0xde, 0x4a, 0x79, 0x52, 0xbe, 0x31, 0x26, 0xc3, 0x55, 0xb6, 0x57,
-	0x9f, 0x68, 0xf0, 0x6a, 0x25, 0x3a, 0xe4, 0x1f, 0x3f, 0x02, 0x63, 0xbc, 0x6c, 0xb6, 0x52, 0x65,
-	0x4f, 0xf9, 0xc7, 0xfb, 0xef, 0xdb, 0xac, 0x79, 0x49, 0xaa, 0x19, 0xc8, 0xca, 0x8e, 0x68, 0x36,
-	0xd8, 0x1a, 0x4a, 0x63, 0x6f, 0x80, 0x27, 0x0a, 0x56, 0x92, 0x47, 0x57, 0x5b, 0xe0, 0x61, 0x91,
-	0xda, 0x31, 0x06, 0x07, 0x46, 0x7a, 0xa5, 0x6e, 0xd7, 0xbb, 0x2f, 0xbb, 0x00, 0x00, 0x00, 0xff,
-	0xff, 0xe8, 0x9b, 0x69, 0x06, 0x39, 0x01, 0x00, 0x00,
+	// 317 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x92, 0xc1, 0x4a, 0xc3, 0x40,
+	0x10, 0x86, 0x49, 0x85, 0x22, 0xd3, 0x0a, 0xba, 0x96, 0xda, 0x06, 0xc1, 0x90, 0x53, 0x28, 0x98,
+	0xd5, 0x7a, 0x13, 0x54, 0x50, 0xd1, 0xab, 0x08, 0x5e, 0xbc, 0x6d, 0xcc, 0x34, 0x2c, 0xa4, 0xbb,
+	0x6b, 0x76, 0x2b, 0x88, 0x78, 0xf1, 0x15, 0x7c, 0x2b, 0xaf, 0xbe, 0x82, 0x0f, 0x22, 0x4d, 0x96,
+	0x9a, 0xd0, 0x05, 0x95, 0xde, 0x96, 0x99, 0x7f, 0xbe, 0x9f, 0xf9, 0x67, 0x21, 0x60, 0x8a, 0x53,
+	0x55, 0x48, 0x23, 0x93, 0xd9, 0x64, 0x5f, 0x2b, 0x7c, 0xa0, 0x93, 0x42, 0x0a, 0x83, 0x22, 0x8d,
+	0xcb, 0x32, 0x59, 0x63, 0x8a, 0xfb, 0x0e, 0xd9, 0x14, 0xb5, 0x66, 0x19, 0xea, 0x4a, 0xe6, 0xef,
+	0x66, 0x52, 0x66, 0x39, 0xd2, 0xb9, 0x90, 0x09, 0x21, 0x0d, 0x33, 0x5c, 0x0a, 0xdb, 0x0d, 0xcf,
+	0x60, 0xfb, 0xa2, 0x40, 0x66, 0xf0, 0x26, 0x67, 0xcf, 0x58, 0xdc, 0xe2, 0xe3, 0x0c, 0xb5, 0x21,
+	0x11, 0xb4, 0x55, 0x59, 0x18, 0x78, 0x81, 0x17, 0x75, 0xc6, 0x9b, 0xf1, 0x82, 0x6a, 0x85, 0xb6,
+	0x1f, 0xf6, 0xa1, 0xd7, 0x04, 0x68, 0x25, 0x85, 0xc6, 0x39, 0xf8, 0x12, 0x73, 0x5c, 0x09, 0xdc,
+	0x04, 0x58, 0xf0, 0x09, 0x6c, 0x5d, 0xa3, 0xb9, 0x53, 0x29, 0x33, 0xa8, 0xff, 0x8f, 0x3d, 0x05,
+	0x52, 0x1f, 0xaf, 0xa0, 0x7f, 0x9f, 0x1f, 0x7f, 0xb4, 0x60, 0xfd, 0xca, 0x1e, 0x82, 0xa4, 0xd0,
+	0xad, 0x2f, 0x4f, 0x06, 0x31, 0x53, 0x3c, 0x76, 0x04, 0xea, 0x0f, 0x1d, 0x1d, 0xbb, 0xd0, 0xde,
+	0xdb, 0xe7, 0xd7, 0x7b, 0x6b, 0xe8, 0xf7, 0xe8, 0xd3, 0xe1, 0xe2, 0xc6, 0xb4, 0xb2, 0xd3, 0xc7,
+	0xde, 0x88, 0x4c, 0xa1, 0x5b, 0x4f, 0xc2, 0xba, 0x38, 0xd2, 0xb5, 0x2e, 0xce, 0xd8, 0xa2, 0xd2,
+	0x25, 0x1c, 0x05, 0x2e, 0x17, 0xfa, 0x52, 0x3d, 0x62, 0x9e, 0xbe, 0x12, 0x0e, 0xf0, 0x93, 0x10,
+	0xe9, 0x97, 0xc8, 0xa5, 0xc4, 0xfd, 0x9d, 0xa5, 0x7a, 0xd3, 0x88, 0xfc, 0x6a, 0x74, 0xe0, 0x9d,
+	0x6f, 0xdc, 0x77, 0xb8, 0x30, 0x58, 0x08, 0x96, 0x53, 0x95, 0x24, 0xed, 0xf2, 0x4f, 0x1e, 0x7d,
+	0x07, 0x00, 0x00, 0xff, 0xff, 0x6e, 0xc9, 0xe9, 0x30, 0xfc, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -62,7 +297,7 @@ type FrontendClient interface {
 	//  - properties
 	// OUTPUT: Result message denoting success or failure (and an error if
 	// necessary)
-	CreatePlayer(ctx context.Context, in *Player, opts ...grpc.CallOption) (*Result, error)
+	CreatePlayer(ctx context.Context, in *CreatePlayerRequest, opts ...grpc.CallOption) (*CreatePlayerResponse, error)
 	// DeletePlayer removes the player from state storage by doing the
 	// following:
 	//  1) Delete player from configured indices.  This effectively removes the
@@ -76,7 +311,7 @@ type FrontendClient interface {
 	// INPUT: Player message with the 'id' field populated.
 	// OUTPUT: Result message denoting success or failure (and an error if
 	// necessary)
-	DeletePlayer(ctx context.Context, in *Player, opts ...grpc.CallOption) (*Result, error)
+	DeletePlayer(ctx context.Context, in *DeletePlayerRequest, opts ...grpc.CallOption) (*DeletePlayerResponse, error)
 	// GetUpdates streams matchmaking results from Open Match for the
 	// provided player ID.
 	// INPUT: Player message with the 'id' field populated.
@@ -102,7 +337,7 @@ type FrontendClient interface {
 	//  generate load on OM until you do!
 	// NOTE: Just bear in mind that every update will send egress traffic from
 	//  Open Match to game clients! Frugality is recommended.
-	GetUpdates(ctx context.Context, in *Player, opts ...grpc.CallOption) (Frontend_GetUpdatesClient, error)
+	GetUpdates(ctx context.Context, in *GetUpdatesRequest, opts ...grpc.CallOption) (Frontend_GetUpdatesClient, error)
 }
 
 type frontendClient struct {
@@ -113,8 +348,8 @@ func NewFrontendClient(cc *grpc.ClientConn) FrontendClient {
 	return &frontendClient{cc}
 }
 
-func (c *frontendClient) CreatePlayer(ctx context.Context, in *Player, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *frontendClient) CreatePlayer(ctx context.Context, in *CreatePlayerRequest, opts ...grpc.CallOption) (*CreatePlayerResponse, error) {
+	out := new(CreatePlayerResponse)
 	err := c.cc.Invoke(ctx, "/api.Frontend/CreatePlayer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -122,8 +357,8 @@ func (c *frontendClient) CreatePlayer(ctx context.Context, in *Player, opts ...g
 	return out, nil
 }
 
-func (c *frontendClient) DeletePlayer(ctx context.Context, in *Player, opts ...grpc.CallOption) (*Result, error) {
-	out := new(Result)
+func (c *frontendClient) DeletePlayer(ctx context.Context, in *DeletePlayerRequest, opts ...grpc.CallOption) (*DeletePlayerResponse, error) {
+	out := new(DeletePlayerResponse)
 	err := c.cc.Invoke(ctx, "/api.Frontend/DeletePlayer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -131,7 +366,7 @@ func (c *frontendClient) DeletePlayer(ctx context.Context, in *Player, opts ...g
 	return out, nil
 }
 
-func (c *frontendClient) GetUpdates(ctx context.Context, in *Player, opts ...grpc.CallOption) (Frontend_GetUpdatesClient, error) {
+func (c *frontendClient) GetUpdates(ctx context.Context, in *GetUpdatesRequest, opts ...grpc.CallOption) (Frontend_GetUpdatesClient, error) {
 	stream, err := c.cc.NewStream(ctx, &_Frontend_serviceDesc.Streams[0], "/api.Frontend/GetUpdates", opts...)
 	if err != nil {
 		return nil, err
@@ -147,7 +382,7 @@ func (c *frontendClient) GetUpdates(ctx context.Context, in *Player, opts ...grp
 }
 
 type Frontend_GetUpdatesClient interface {
-	Recv() (*Player, error)
+	Recv() (*GetUpdatesResponse, error)
 	grpc.ClientStream
 }
 
@@ -155,8 +390,8 @@ type frontendGetUpdatesClient struct {
 	grpc.ClientStream
 }
 
-func (x *frontendGetUpdatesClient) Recv() (*Player, error) {
-	m := new(Player)
+func (x *frontendGetUpdatesClient) Recv() (*GetUpdatesResponse, error) {
+	m := new(GetUpdatesResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -174,7 +409,7 @@ type FrontendServer interface {
 	//  - properties
 	// OUTPUT: Result message denoting success or failure (and an error if
 	// necessary)
-	CreatePlayer(context.Context, *Player) (*Result, error)
+	CreatePlayer(context.Context, *CreatePlayerRequest) (*CreatePlayerResponse, error)
 	// DeletePlayer removes the player from state storage by doing the
 	// following:
 	//  1) Delete player from configured indices.  This effectively removes the
@@ -188,7 +423,7 @@ type FrontendServer interface {
 	// INPUT: Player message with the 'id' field populated.
 	// OUTPUT: Result message denoting success or failure (and an error if
 	// necessary)
-	DeletePlayer(context.Context, *Player) (*Result, error)
+	DeletePlayer(context.Context, *DeletePlayerRequest) (*DeletePlayerResponse, error)
 	// GetUpdates streams matchmaking results from Open Match for the
 	// provided player ID.
 	// INPUT: Player message with the 'id' field populated.
@@ -214,7 +449,7 @@ type FrontendServer interface {
 	//  generate load on OM until you do!
 	// NOTE: Just bear in mind that every update will send egress traffic from
 	//  Open Match to game clients! Frugality is recommended.
-	GetUpdates(*Player, Frontend_GetUpdatesServer) error
+	GetUpdates(*GetUpdatesRequest, Frontend_GetUpdatesServer) error
 }
 
 func RegisterFrontendServer(s *grpc.Server, srv FrontendServer) {
@@ -222,7 +457,7 @@ func RegisterFrontendServer(s *grpc.Server, srv FrontendServer) {
 }
 
 func _Frontend_CreatePlayer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Player)
+	in := new(CreatePlayerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -234,13 +469,13 @@ func _Frontend_CreatePlayer_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/api.Frontend/CreatePlayer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FrontendServer).CreatePlayer(ctx, req.(*Player))
+		return srv.(FrontendServer).CreatePlayer(ctx, req.(*CreatePlayerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Frontend_DeletePlayer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Player)
+	in := new(DeletePlayerRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -252,13 +487,13 @@ func _Frontend_DeletePlayer_Handler(srv interface{}, ctx context.Context, dec fu
 		FullMethod: "/api.Frontend/DeletePlayer",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(FrontendServer).DeletePlayer(ctx, req.(*Player))
+		return srv.(FrontendServer).DeletePlayer(ctx, req.(*DeletePlayerRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
 func _Frontend_GetUpdates_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(Player)
+	m := new(GetUpdatesRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -266,7 +501,7 @@ func _Frontend_GetUpdates_Handler(srv interface{}, stream grpc.ServerStream) err
 }
 
 type Frontend_GetUpdatesServer interface {
-	Send(*Player) error
+	Send(*GetUpdatesResponse) error
 	grpc.ServerStream
 }
 
@@ -274,7 +509,7 @@ type frontendGetUpdatesServer struct {
 	grpc.ServerStream
 }
 
-func (x *frontendGetUpdatesServer) Send(m *Player) error {
+func (x *frontendGetUpdatesServer) Send(m *GetUpdatesResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

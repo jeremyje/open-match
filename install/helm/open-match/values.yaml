@@ -24,18 +24,30 @@ openmatch:
     install: true
     grpc:
       port: 50505
+    proxy:
+      port: 51505
   frontendapi:
     install: true
     grpc:
       port: 50504
+    proxy:
+      port: 51504
   mmforc:
     install: true
+    serviceAccount: mmforc-job-runner
   mmlogicapi:
     install: true
     grpc:
       port: 50503
+    proxy:
+      port: 51503
   config:
-    matchmaker: /go/src/github.com/GoogleCloudPlatform/open-match/config
+    install: true
+    mountPath: /config
+    contents:
+      matchmaker_config.yaml:
+        # Write YAML here to replace default Open-match config with your custom one.
+        # You can refer to other chart values using the Helm templates syntax here.
   image:
     registry: gcr.io/open-match-public-images
     tag: 0.4.0
@@ -55,8 +67,11 @@ openmatch:
 # https://hub.helm.sh/charts/stable/redis
 # https://github.com/helm/charts/tree/master/stable/redis
 redis:
-  # TODO: Setup redis authentication via Kubernetes secrets.
+  fullnameOverride: om-redis
+  # TODO: Temporarily disable password protected Redis until all the examples are no longer talking directly to the database.
   usePassword: false
+  master:
+    disableCommands: [] # don't disable 'FLUSH-' commands
   metrics:
     enabled: true
 
@@ -189,6 +204,6 @@ grafana:
       datasources:
       - name: Prometheus
         type: prometheus
-        url: http://open-match-prometheus-server.open-match.svc.cluster.local:80/
+        url: http://open-match-prometheus-server.{{ .Release.Namespace }}.svc.cluster.local:80/
         access: proxy
         isDefault: true

@@ -13,41 +13,52 @@
 # limitations under the License.
 
 {{- if .Values.openmatch.mmlogicapi.install }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: om-mmlogicapi
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "openmatch.name" . }}
+    {{- include "openmatch.chartmeta" (set . "indent" 4) }}
+spec:
+  selector:
+    app: {{ template "openmatch.name" . }}
+    component: mmlogic
+    {{- include "openmatch.chartmeta" (set . "indent" 4) }}
+  ports:
+  - name: grpc
+    protocol: TCP
+    port: {{ .Values.openmatch.mmlogicapi.grpc.port }}
+  - name: proxy
+    protocol: TCP
+    port: {{ .Values.openmatch.mmlogicapi.proxy.port }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: om-mmlogicapi
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "openmatch.name" . }}
     component: mmlogic
-    chart: {{ template "openmatch.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "openmatch.chartmeta" (set . "indent" 4) }}
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: {{ template "openmatch.name" . }}
       component: mmlogic
-      chart: {{ template "openmatch.chart" . }}
-      release: {{ .Release.Name }}
-      heritage: {{ .Release.Service }}
+      {{- include "openmatch.chartmeta" (set . "indent" 6) }}
   template:
-    namespace: {{ .Release.Namespace }}
     metadata:
+      namespace: {{ .Release.Namespace }}
       annotations:
-      {{- if and (.Values.openmatch.metrics.prometheusServiceDiscovery) (.Values.openmatch.metrics.prometheusEnabled) }}
-        prometheus.io/scrape: "true"
-        prometheus.io/port: {{ .Values.openmatch.metrics.port | quote }}
-        prometheus.io/path: {{ .Values.openmatch.metrics.path }}
-      {{- end }}
+        {{- include "prometheus.annotations" . | nindent 8 }}
       labels:
         app: {{ template "openmatch.name" . }}
         component: mmlogic
-        chart: {{ template "openmatch.chart" . }}
-        release: {{ .Release.Name }}
-        heritage: {{ .Release.Service }}
+        {{- include "openmatch.chartmeta" (set . "indent" 8) }}
     spec:
       containers:
       - name: om-mmlogic
@@ -55,10 +66,12 @@ spec:
         imagePullPolicy: {{ .Values.openmatch.image.mmlogicapi.pullPolicy }}
         volumeMounts:
         - name: om-config-volume
-          mountPath: {{ .Values.openmatch.config.matchmaker }}
+          mountPath: {{ .Values.openmatch.config.mountPath }}
         ports:
         - name: grpc
           containerPort: {{ .Values.openmatch.mmlogicapi.grpc.port }}
+        - name: proxy
+          containerPort: {{ .Values.openmatch.mmlogicapi.proxy.port }}
         - name: metrics
           containerPort: {{ .Values.openmatch.metrics.port }}
         resources:
@@ -67,31 +80,18 @@ spec:
             cpu: 100m
         env:
         - name: REDIS_SERVICE_HOST
-          value: "$(OPEN_MATCH_REDIS_MASTER_SERVICE_HOST)"
+          value: "$(OM_REDIS_MASTER_SERVICE_HOST)"
         - name: REDIS_SERVICE_PORT
-          value: "$(OPEN_MATCH_REDIS_MASTER_SERVICE_PORT)"
+          value: "$(OM_REDIS_MASTER_SERVICE_PORT)"
+        {{- if .Values.redis.usePassword }}
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.redis.fullnameOverride }}
+              key: redis-password
+        {{- end}}
       volumes:
       - name: om-config-volume
         configMap:
           name: om-configmap
----
-kind: Service
-apiVersion: v1
-namespace: {{ .Release.Namespace }}
-metadata:
-  name: om-mmlogicapi
-  namespace: {{ .Release.Namespace }}
-  labels:
-    app: {{ template "openmatch.name" . }}
-    chart: {{ template "openmatch.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
-spec:
-  selector:
-    app: openmatch
-    component: mmlogic
-  ports:
-  - protocol: TCP
-    port: {{ .Values.openmatch.mmlogicapi.grpc.port }}
-    targetPort: grpc
 {{- end }}

@@ -22,7 +22,6 @@ package mmforc
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"net"
 	"net/http"
 	"os"
@@ -30,17 +29,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GoogleCloudPlatform/open-match/internal/util/netlistener"
+
 	"github.com/GoogleCloudPlatform/open-match/config"
 	"github.com/GoogleCloudPlatform/open-match/internal/logging"
 	"github.com/GoogleCloudPlatform/open-match/internal/metrics"
 	redishelpers "github.com/GoogleCloudPlatform/open-match/internal/statestorage/redis"
+	redigometrics "github.com/opencensus-integrations/redigo/redis"
 	"github.com/tidwall/gjson"
 	"go.opencensus.io/stats"
 	"go.opencensus.io/tag"
 
 	"github.com/gomodule/redigo/redis"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,22 +74,19 @@ var (
 		userKey:     "",
 		passwordKey: "",
 	}
-
-	// Viper config management setup
-	cfg = viper.New()
-	err = errors.New("")
 )
 
-func initializeApplication() {
+func initializeApplication() (config.View, error) {
 	// Add a hook to the logger to auto-count log lines for metrics output thru OpenCensus
 	log.AddHook(metrics.NewHook(MmforcLogLines, KeySeverity))
 
-	// Viper config management initialization
-	cfg, err = config.Read()
+	// Load configuration
+	cfg, err := config.Read()
 	if err != nil {
 		mmforcLog.WithFields(log.Fields{
 			"error": err.Error(),
 		}).Error("Unable to load config file")
+		return nil, err
 	}
 
 	// Configure open match logging defaults
@@ -107,17 +105,27 @@ func initializeApplication() {
 	// metrics.ConfigureOpenCensusPrometheusExporter expects that every OpenCensus view you
 	// want to register is in an array, so append any views you want from other
 	// packages to a single array here.
-	ocMmforcViews := DefaultMmforcViews // mmforc OpenCensus views.
-	// Waiting on https://github.com/opencensus-integrations/redigo/pull/1
-	// ocMmforcViews = append(ocMmforcViews, redis.ObservabilityMetricViews...) // redis OpenCensus views.
+	ocMmforcViews := DefaultMmforcViews                                              // mmforc OpenCensus views.
+	ocMmforcViews = append(ocMmforcViews, redigometrics.ObservabilityMetricViews...) // redis OpenCensus views.
 	mmforcLog.WithFields(log.Fields{"viewscount": len(ocMmforcViews)}).Info("Loaded OpenCensus views")
-	metrics.ConfigureOpenCensusPrometheusExporter(cfg, ocMmforcViews)
 
+	lh, err := netlistener.NewFromPortNumber(cfg.GetInt("metrics.port"))
+	if err != nil {
+		mmforcLog.WithFields(log.Fields{
+			"error": err.Error(),
+		}).Error("Unable to create metrics TCP listener")
+		return nil, err
+	}
+	metrics.ConfigureOpenCensusPrometheusExporter(lh, cfg, ocMmforcViews)
+	return cfg, nil
 }
 
 // RunApplication is a hook for the main() method in the main executable.
 func RunApplication() {
-	initializeApplication()
+	cfg, err := initializeApplication()
+	if err != nil {
+		mmforcLog.Fatal(err)
+	}
 
 	pool, err := redishelpers.ConnectionPool(cfg)
 	if err != nil {
@@ -268,7 +276,7 @@ func RunApplication() {
 
 // mmfunc generates a k8s job that runs the specified mmf container image.
 // resultsID is the redis key that the Backend API is monitoring for results; we can 'short circuit' and write errors directly to this key if we can't run the MMF for some reason.
-func mmfunc(ctx context.Context, resultsID string, cfg *viper.Viper, clientset *kubernetes.Clientset, pool *redis.Pool) {
+func mmfunc(ctx context.Context, resultsID string, cfg config.View, clientset *kubernetes.Clientset, pool *redis.Pool) {
 
 	// Generate the various keys/names, some of which must be populated to the k8s job.
 	imageName := cfg.GetString("defaultImages.mmf.name") + ":" + cfg.GetString("defaultImages.mmf.tag")
@@ -434,8 +442,7 @@ func callRestFunction(hostName string, strPort string, jobName string, profID st
 }
 
 // evaluator generates a k8s job that runs the specified evaluator container image.
-func evaluator(ctx context.Context, cfg *viper.Viper, clientset *kubernetes.Clientset) {
-
+func evaluator(ctx context.Context, cfg config.View, clientset *kubernetes.Clientset) {
 	imageName := cfg.GetString("defaultImages.evaluator.name") + ":" + cfg.GetString("defaultImages.evaluator.tag")
 	// Generate the job name
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
@@ -449,7 +456,7 @@ func evaluator(ctx context.Context, cfg *viper.Viper, clientset *kubernetes.Clie
 
 	// Kick off k8s job
 	envvars := []apiv1.EnvVar{{Name: "MMF_TIMESTAMP", Value: timestamp}}
-	err = submitJob(cfg, clientset, jobType, jobName, imageName, envvars)
+	err := submitJob(cfg, clientset, jobType, jobName, imageName, envvars)
 	if err != nil {
 		// Record failure & log
 		stats.Record(ctx, mmforcEvalFailures.M(1))
@@ -465,7 +472,7 @@ func evaluator(ctx context.Context, cfg *viper.Viper, clientset *kubernetes.Clie
 }
 
 // submitJob submits a job to kubernetes
-func submitJob(cfg *viper.Viper, clientset *kubernetes.Clientset, jobType string, jobName string, imageName string, envvars []apiv1.EnvVar) error {
+func submitJob(cfg config.View, clientset *kubernetes.Clientset, jobType string, jobName string, imageName string, envvars []apiv1.EnvVar) error {
 
 	// DEPRECATED: will be removed in a future vrsion.  Please switch to using the 'MMF_*' environment variables.
 	v := strings.Split(jobName, ".")

@@ -21,11 +21,11 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"strconv"
 	"time"
 
+	"github.com/GoogleCloudPlatform/open-match/config"
+	"github.com/GoogleCloudPlatform/open-match/internal/util/netlistener"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 
 	"go.opencensus.io/exporter/prometheus"
 	"go.opencensus.io/stats"
@@ -41,15 +41,14 @@ var (
 	mhLog = log.WithFields(metricsLogFields)
 )
 
-// ConfigureOpenCensusPrometheusExporter reads from the provided viper
+// ConfigureOpenCensusPrometheusExporter reads from the provided
 // config's 'metrics' section to set up a metrics endpoint that can be scraped
 // by Promethus for  metrics gathering. The calling code can select any views
 // it wants to  register, from any number of libraries, and pass them in as an
 // array.
-func ConfigureOpenCensusPrometheusExporter(cfg *viper.Viper, views []*view.View) {
-
+func ConfigureOpenCensusPrometheusExporter(lh *netlistener.ListenerHolder, cfg config.View, views []*view.View) {
 	//var infoCtx, err = tag.New(context.Background(), tag.Insert(KeySeverity, "info"))
-	metricsPort := cfg.GetInt("metrics.port")
+	metricsPort := lh.Number()
 	metricsEP := cfg.GetString("metrics.endpoint")
 	metricsRP := cfg.GetInt("metrics.reportingPeriod")
 
@@ -85,7 +84,15 @@ func ConfigureOpenCensusPrometheusExporter(cfg *viper.Viper, views []*view.View)
 			"port":     metricsPort,
 			"endpoint": metricsEP,
 		}).Info("Attempting to start http server for OpenCensus metrics on localhost")
-		err := http.ListenAndServe(":"+strconv.Itoa(metricsPort), mux)
+		listener, err := lh.Obtain()
+		if err != nil {
+			mhLog.WithFields(log.Fields{
+				"error":    err,
+				"port":     metricsPort,
+				"endpoint": metricsEP,
+			}).Fatal("Failed to run Prometheus endpoint")
+		}
+		err = http.Serve(listener, mux)
 		if err != nil {
 			mhLog.WithFields(log.Fields{
 				"error":    err,
