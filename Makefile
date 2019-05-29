@@ -566,7 +566,7 @@ gcloud: no-sudo
 
 tls-certs: install/helm/open-match/secrets/
 
-install/helm/open-match/secrets/: install/helm/open-match/secrets/tls/root-ca/ install/helm/open-match/secrets/tls/server/
+install/helm/open-match/secrets/: install/helm/open-match/secrets/tls/root-ca/ install/helm/open-match/secrets/tls/server/ install/helm/open-match/secrets/tls/helm/
 
 install/helm/open-match/secrets/tls/root-ca/: build/toolchain/bin/certgen$(EXE_EXTENSION)
 	mkdir -p $(OPEN_MATCH_SECRETS_DIR)/tls/root-ca
@@ -575,6 +575,10 @@ install/helm/open-match/secrets/tls/root-ca/: build/toolchain/bin/certgen$(EXE_E
 install/helm/open-match/secrets/tls/server/: build/toolchain/bin/certgen$(EXE_EXTENSION) install/helm/open-match/secrets/tls/root-ca/
 	mkdir -p $(OPEN_MATCH_SECRETS_DIR)/tls/server/
 	$(TOOLCHAIN_BIN)/certgen$(EXE_EXTENSION) -publiccertificate=$(OPEN_MATCH_SECRETS_DIR)/tls/server/public.cert -privatekey=$(OPEN_MATCH_SECRETS_DIR)/tls/server/private.key -rootpubliccertificate=$(OPEN_MATCH_SECRETS_DIR)/tls/root-ca/public.cert -rootprivatekey=$(OPEN_MATCH_SECRETS_DIR)/tls/root-ca/private.key
+
+install/helm/open-match/secrets/tls/helm/: build/toolchain/bin/certgen$(EXE_EXTENSION) install/helm/open-match/secrets/tls/root-ca/
+	mkdir -p $(OPEN_MATCH_SECRETS_DIR)/tls/helm/
+	$(TOOLCHAIN_BIN)/certgen$(EXE_EXTENSION) -publiccertificate=$(OPEN_MATCH_SECRETS_DIR)/tls/helm/public.cert -privatekey=$(OPEN_MATCH_SECRETS_DIR)/tls/helm/private.key -rootpubliccertificate=$(OPEN_MATCH_SECRETS_DIR)/tls/root-ca/public.cert -rootprivatekey=$(OPEN_MATCH_SECRETS_DIR)/tls/root-ca/private.key
 
 auth-docker: gcloud docker
 	gcloud $(GCP_PROJECT_FLAG) auth configure-docker
