@@ -538,9 +538,14 @@ build/toolchain/bin/certgen$(EXE_EXTENSION): tools/certgen/certgen$(EXE_EXTENSIO
 	mkdir -p $(TOOLCHAIN_BIN)
 	cp -f $(REPOSITORY_ROOT)/tools/certgen/certgen$(EXE_EXTENSION) $(TOOLCHAIN_BIN)/certgen$(EXE_EXTENSION)
 
-push-helm: build/toolchain/bin/helm$(EXE_EXTENSION) build/toolchain/bin/kubectl$(EXE_EXTENSION)
+push-helm: build/toolchain/bin/helm$(EXE_EXTENSION) build/toolchain/bin/kubectl$(EXE_EXTENSION) install/helm/open-match/secrets/
 	$(KUBECTL) create serviceaccount --namespace kube-system tiller
-	$(HELM) init --service-account tiller --force-upgrade
+	$(HELM) init --service-account tiller --force-upgrade --override 'spec.template.spec.containers[0].command'='{/tiller,--storage=secret}' \
+		--tiller-tls \
+		--tiller-tls-verify \
+		--tiller-tls-cert=$(OPEN_MATCH_SECRETS_DIR)/tls/helm/public.cert \
+		--tiller-tls-key=$(OPEN_MATCH_SECRETS_DIR)/tls/helm/private.key \
+		--tls-ca-cert=$(OPEN_MATCH_SECRETS_DIR)/tls/root-ca/public.cert
 	$(KUBECTL) create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
 ifneq ($(strip $($(KUBECTL) get clusterroles | grep -i rbac)),)
 	$(KUBECTL) patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
