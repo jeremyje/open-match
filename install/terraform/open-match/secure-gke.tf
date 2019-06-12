@@ -112,7 +112,7 @@ resource "google_container_cluster" "primary" {
       disabled = true
     }
     network_policy_config {
-      disabled = true
+      disabled = false
     }
     istio_config {
       disabled = true
@@ -174,8 +174,8 @@ resource "google_container_cluster" "primary" {
   
   monitoring_service = "monitoring.googleapis.com/kubernetes"
   network_policy {
-    provider = "PROVIDER_UNSPECIFIED"
-    enabled = false
+    provider = "CALICO"
+    enabled = true
   }
 
   /*

@@ -230,6 +230,9 @@ openmatch:
       name: openmatch-demo
       pullPolicy: Always
 
+  security:
+    networkpolicy: true
+
 # https://hub.helm.sh/charts/stable/redis
 # https://github.com/helm/charts/tree/master/stable/redis
 redis:

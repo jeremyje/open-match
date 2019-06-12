@@ -58,6 +58,8 @@ spec:
       labels:
         app: {{ template "openmatch.name" . }}
         component: frontend
+        open-match-pod: "true"
+        can-talk-to-redis: "true"
         {{- include "openmatch.chartmeta" (set . "indent" 8) }}
     spec:
       serviceAccountName: open-match-unprivileged-service
@@ -94,4 +96,29 @@ spec:
       - name: om-config-volume
         configMap:
           name: om-configmap
+---
+{{- if .Values.openmatch.security.networkpolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: om-frontend-network-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "openmatch.name" . }}
+    {{- include "openmatch.chartmeta" (set . "indent" 4) }}
+spec:
+  podSelector:
+    matchLabels:
+      component: frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    - podSelector:
+        matchLabels:
+          can-talk-to-frontend: "true"
+{{- end }}
 {{- end }}

@@ -92,7 +92,7 @@ ALTERNATE_TAG = dev
 VERSIONED_CANARY_TAG = $(BASE_VERSION)-canary
 DATED_CANARY_TAG = $(YEAR_MONTH_DAY)-canary
 CANARY_TAG = canary
-GKE_CLUSTER_NAME = om-cluster
+GKE_CLUSTER_NAME = om-cluster-net
 GCP_REGION = us-west1
 GCP_ZONE = us-west1-a
 GCP_LOCATION = $(GCP_ZONE)
@@ -656,7 +656,7 @@ create-gke-cluster: GKE_VERSION = 1.13.6 # gcloud beta container get-server-conf
 create-gke-cluster: GKE_CLUSTER_SHAPE_FLAGS = --machine-type n1-standard-4 --enable-autoscaling --min-nodes 1 --num-nodes 2 --max-nodes 10 --disk-size 50
 create-gke-cluster: GKE_FUTURE_COMPAT_FLAGS = --no-enable-basic-auth --no-issue-client-certificate --enable-ip-alias --metadata disable-legacy-endpoints=true --enable-autoupgrade
 create-gke-cluster: build/toolchain/bin/kubectl$(EXE_EXTENSION) gcloud
-	$(GCLOUD) beta $(GCP_PROJECT_FLAG) container clusters create $(GKE_CLUSTER_NAME) $(GCP_LOCATION_FLAG) --enable-pod-security-policy --cluster-version $(GKE_VERSION) --image-type cos_containerd --tags open-match $(GKE_CLUSTER_SHAPE_FLAGS) $(GKE_FUTURE_COMPAT_FLAGS) $(GKE_CLUSTER_FLAGS)
+	$(GCLOUD) beta $(GCP_PROJECT_FLAG) container clusters create $(GKE_CLUSTER_NAME) $(GCP_LOCATION_FLAG) --enable-pod-security-policy --cluster-version $(GKE_VERSION) --image-type cos_containerd --enable-network-policy --tags open-match $(GKE_CLUSTER_SHAPE_FLAGS) $(GKE_FUTURE_COMPAT_FLAGS) $(GKE_CLUSTER_FLAGS)
 	$(KUBECTL) create clusterrolebinding myname-cluster-admin-binding --clusterrole=cluster-admin --user=$(GCLOUD_ACCOUNT_EMAIL)
 
 delete-gke-cluster: gcloud
@@ -726,6 +726,10 @@ test:
 
 stress-frontend-%: build/toolchain/python/
 	$(TOOLCHAIN_DIR)/python/bin/locust -f $(REPOSITORY_ROOT)/test/stress/frontend.py --host=http://localhost:51504 \
+		--no-web -c $* -r 100 -t10m --csv=test/stress/stress_user$*
+
+stress-mmlogic-%: build/toolchain/python/
+	$(TOOLCHAIN_DIR)/python/bin/locust -f $(REPOSITORY_ROOT)/test/stress/mmlogic.py --host=http://localhost:51503 \
 		--no-web -c $* -r 100 -t10m --csv=test/stress/stress_user$*
 
 fmt:

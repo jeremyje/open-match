@@ -29,6 +29,7 @@ spec:
   - name: http
     protocol: TCP
     port: {{ .Values.openmatch.swaggerui.http.port }}
+{{- if .Values.openmatch.security.networkpolicy }}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -52,6 +53,11 @@ spec:
       labels:
         app: {{ template "openmatch.name" . }}
         component: swaggerui
+        open-match-pod: "true"
+        can-talk-to-frontend: "true"
+        can-talk-to-backend: "true"
+        can-talk-to-mmlogic: "true"
+        can-talk-to-synchronizer: "true"
         {{- include "openmatch.chartmeta" (set . "indent" 8) }}
     spec:
       serviceAccountName: open-match-unprivileged-service
@@ -66,4 +72,5 @@ spec:
           requests:
             memory: 100Mi
             cpu: 100m
+{{- end }}
 {{- end }}

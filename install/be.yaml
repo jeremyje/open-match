@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: om-backend-network-policy
+  namespace: open-match
+  labels:
+    app: open-match
+spec:
+  podSelector:
+    matchLabels:
+      component: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: open-match
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  - to:
+    ports:
+    # GCE Metadata Server
+    - protocol: TCP
+      port: 80
+    # Redis
+    - protocol: TCP
+      port: 6379

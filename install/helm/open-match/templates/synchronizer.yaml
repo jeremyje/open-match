@@ -57,6 +57,7 @@ spec:
       labels:
         app: {{ template "openmatch.name" . }}
         component: synchronizer
+        can-talk-to-evaluator: "true"
         {{- include "openmatch.chartmeta" (set . "indent" 8) }}
     spec:
       serviceAccountName: open-match-unprivileged-service
@@ -93,4 +94,29 @@ spec:
       - name: om-config-volume
         configMap:
           name: om-configmap
+---
+{{- if .Values.openmatch.security.networkpolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: om-synchronizer-network-policy
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "openmatch.name" . }}
+    {{- include "openmatch.chartmeta" (set . "indent" 4) }}
+spec:
+  podSelector:
+    matchLabels:
+      component: synchronizer
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    - podSelector:
+        matchLabels:
+          can-talk-to-synchronizer: "true"
+{{- end }}
 {{- end }}

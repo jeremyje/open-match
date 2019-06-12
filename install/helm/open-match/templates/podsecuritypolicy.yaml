@@ -22,6 +22,8 @@ metadata:
     {{- include "openmatch.chartmeta" (set . "indent" 4) }}
 spec:
   allowPrivilegeEscalation: false
+  allowedHostPaths:
+  - pathPrefix: "/dev/null"
   defaultAllowPrivilegeEscalation: false
   forbiddenSysctls:
   - "*"
