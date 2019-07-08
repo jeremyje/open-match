@@ -57,6 +57,7 @@ func RunApplication() {
 // BindService creates the backend service and binds it to the serving harness.
 func BindService(p *rpc.ServerParams, cfg config.View) error {
 	service := &backendService{
+		cfg:          cfg,
 		synchronizer: &synchronizerClient{cfg: cfg},
 		store:        statestore.New(cfg),
 		mmfClients:   rpc.NewClientCache(cfg),

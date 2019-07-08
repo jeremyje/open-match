@@ -22,18 +22,27 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"github.com/golang/protobuf/proto"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	"open-match.dev/open-match/internal/config"
 	"open-match.dev/open-match/internal/rpc"
 	"open-match.dev/open-match/internal/statestore"
 	"open-match.dev/open-match/pkg/pb"
 )
 
+const (
+	// MMFProxyServiceConfigHeader is the HTTP header (GRPC Metadata key) for forwarding the connection information to the MMF Proxy.
+	MMFProxyServiceConfigHeader = "X-om-mmfproxy-service-config-bin"
+)
+
 // The service implementing the Backend API that is called to generate matches
 // and make assignments for Tickets.
 type backendService struct {
+	cfg          config.View
 	synchronizer *synchronizerClient
 	store        statestore.Service
 	mmfClients   *rpc.ClientCache
@@ -75,7 +84,7 @@ func (s *backendService) FetchMatches(ctx context.Context, req *pb.FetchMatchesR
 		return nil, err
 	}
 
-	err = doFetchMatchesReceiveMmfResult(ctx, s.mmfClients, req, resultChan)
+	err = doFetchMatchesReceiveMmfResult(ctx, s.cfg, s.mmfClients, req, resultChan)
 	if err != nil {
 		return nil, err
 	}
@@ -93,40 +102,55 @@ func (s *backendService) FetchMatches(ctx context.Context, req *pb.FetchMatchesR
 	return &pb.FetchMatchesResponse{Matches: results}, nil
 }
 
-func doFetchMatchesReceiveMmfResult(ctx context.Context, mmfClients *rpc.ClientCache, req *pb.FetchMatchesRequest, resultChan chan<- mmfResult) error {
+func doFetchMatchesReceiveMmfResult(ctx context.Context, cfg config.View, mmfClients *rpc.ClientCache, req *pb.FetchMatchesRequest, resultChan chan<- mmfResult) error {
 	var grpcClient pb.MatchFunctionClient
 	var httpClient *http.Client
 	var baseURL string
 	var err error
+	var address string
+	var configType pb.FunctionConfig_Type
 
-	configType := req.GetConfig().GetType()
-	address := fmt.Sprintf("%s:%d", req.GetConfig().GetHost(), req.GetConfig().GetPort())
+	useMMFProxy := cfg.GetBool("mmfproxy.enabled")
+	if useMMFProxy {
+		var configAsBytes []byte
+		configAsBytes, err = proto.Marshal(req.GetConfig())
+		if err != nil {
+			return status.Error(codes.Internal, "failed to marshal proto for mmfproxy connection information")
+		}
+		ctx = metadata.AppendToOutgoingContext(ctx, MMFProxyServiceConfigHeader, string(configAsBytes))
+		configType = pb.FunctionConfig_GRPC
+		// Always use GRPC to talk to MMF Proxy
+		address = fmt.Sprintf("%s:%d", cfg.GetString("api.mmfproxy.hostname"), cfg.GetInt("api.mmfproxy.grpcport"))
+	} else {
+		configType = req.GetConfig().GetType()
+		address = fmt.Sprintf("%s:%d", req.GetConfig().GetHost(), req.GetConfig().GetPort())
 
-	switch configType {
-	// MatchFunction Hosted as a GRPC service
-	case pb.FunctionConfig_GRPC:
-		var conn *grpc.ClientConn
-		conn, err = mmfClients.GetGRPC(address)
-		if err != nil {
-			backendServiceLogger.WithFields(logrus.Fields{
-				"error":    err.Error(),
-				"function": req.GetConfig(),
-			}).Error("failed to establish grpc client connection to match function")
-			return status.Error(codes.InvalidArgument, "failed to connect to match function")
+		switch configType {
+		// MatchFunction Hosted as a GRPC service
+		case pb.FunctionConfig_GRPC:
+			var conn *grpc.ClientConn
+			conn, err = mmfClients.GetGRPC(address)
+			if err != nil {
+				backendServiceLogger.WithFields(logrus.Fields{
+					"error":    err.Error(),
+					"function": req.GetConfig(),
+				}).Error("failed to establish grpc client connection to match function")
+				return status.Error(codes.InvalidArgument, "failed to connect to match function")
+			}
+			grpcClient = pb.NewMatchFunctionClient(conn)
+		// MatchFunction Hosted as a REST service
+		case pb.FunctionConfig_REST:
+			httpClient, baseURL, err = mmfClients.GetHTTP(address)
+			if err != nil {
+				backendServiceLogger.WithFields(logrus.Fields{
+					"error":    err.Error(),
+					"function": req.GetConfig(),
+				}).Error("failed to establish rest client connection to match function")
+				return status.Error(codes.InvalidArgument, "failed to connect to match function")
+			}
+		default:
+			return status.Error(codes.InvalidArgument, "provided match function type is not supported")
 		}
-		grpcClient = pb.NewMatchFunctionClient(conn)
-	// MatchFunction Hosted as a REST service
-	case pb.FunctionConfig_REST:
-		httpClient, baseURL, err = mmfClients.GetHTTP(address)
-		if err != nil {
-			backendServiceLogger.WithFields(logrus.Fields{
-				"error":    err.Error(),
-				"function": req.GetConfig(),
-			}).Error("failed to establish rest client connection to match function")
-			return status.Error(codes.InvalidArgument, "failed to connect to match function")
-		}
-	default:
-		return status.Error(codes.InvalidArgument, "provided match function type is not supported")
 	}
 
 	for _, profile := range req.GetProfiles() {
@@ -218,6 +242,15 @@ func matchesFromHTTPMMF(ctx context.Context, profile *pb.MatchProfile, client *h
 // These proposals are then sent to evaluator and the results are streamed back on the channel
 // that this function returns to the caller.
 func matchesFromGRPCMMF(ctx context.Context, profile *pb.MatchProfile, client pb.MatchFunctionClient) ([]*pb.Match, error) {
+	if client == nil {
+		backendServiceLogger.Print("client")
+	}
+	if ctx == nil {
+		backendServiceLogger.Print("ctx")
+	}
+	if profile == nil {
+		backendServiceLogger.Print("profile")
+	}
 	// TODO: This code calls user code and could hang. We need to add a deadline here
 	// and timeout gracefully to ensure that the ListMatches completes.
 	resp, err := client.Run(ctx, &pb.RunRequest{Profile: profile})

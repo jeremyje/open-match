@@ -114,6 +114,7 @@ creds.json
 # Open Match Binaries
 cmd/backend/backend
 cmd/frontend/frontend
+cmd/mmfproxy/mmfproxy
 cmd/mmlogic/mmlogic
 cmd/synchronizer/synchronizer
 cmd/minimatch/minimatch

@@ -66,6 +66,7 @@ type matchFunctionService struct {
 //  - poolNameToTickets:
 //			A map that contains mappings from pool name to a list of tickets that satisfied the filters in the pool
 type MatchFunctionParams struct {
+	Context           context.Context
 	Logger            *logrus.Entry
 	ProfileName       string
 	Properties        *structpb.Struct
@@ -82,6 +83,7 @@ func (s *matchFunctionService) Run(ctx context.Context, req *pb.RunRequest) (*pb
 
 	// The matchfunction takes in some half-filled/empty rosters, a property bag, and a map[poolNames]tickets to generate match proposals
 	mfView := &MatchFunctionParams{
+		Context:           ctx,
 		Logger:            matchfunctionLogger,
 		ProfileName:       req.GetProfile().GetName(),
 		Properties:        req.GetProfile().GetProperties(),

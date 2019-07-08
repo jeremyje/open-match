@@ -90,7 +90,7 @@ func TestDoFetchMatchesInChannel(t *testing.T) {
 		t.Run(test.description, func(t *testing.T) {
 			cc := rpc.NewClientCache(test.cfg)
 			resultChan := make(chan mmfResult, len(test.req.GetProfiles()))
-			err := doFetchMatchesReceiveMmfResult(context.Background(), cc, test.req, resultChan)
+			err := doFetchMatchesReceiveMmfResult(context.Background(), test.cfg, cc, test.req, resultChan)
 			assert.Equal(t, test.wantErr, err)
 		})
 	}

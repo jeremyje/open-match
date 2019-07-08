@@ -239,7 +239,7 @@ retag-%-image: docker
 # Below should match retag-images
 push-images: push-service-images push-example-images push-tool-images
 
-push-service-images: push-backend-image push-frontend-image push-mmlogic-image push-minimatch-image push-synchronizer-image push-swaggerui-image
+push-service-images: push-backend-image push-frontend-image push-mmlogic-image push-minimatch-image push-synchronizer-image push-swaggerui-image push-mmfproxy-image
 push-example-images: push-demo-images push-mmf-example-images push-evaluator-example-images
 push-demo-images: push-mmf-go-soloduel-image push-demo-image
 push-mmf-example-images: push-mmf-go-soloduel-image push-mmf-go-pool-image
@@ -263,7 +263,7 @@ endif
 
 build-images: build-service-images build-example-images build-tool-images
 
-build-service-images: build-backend-image build-frontend-image build-mmlogic-image build-minimatch-image build-synchronizer-image build-swaggerui-image
+build-service-images: build-backend-image build-frontend-image build-mmlogic-image build-minimatch-image build-synchronizer-image build-swaggerui-image build-mmfproxy-image
 build-example-images: build-demo-images build-mmf-example-images build-evaluator-example-images
 build-demo-images: build-mmf-go-soloduel-image build-demo-image
 build-mmf-example-images: build-mmf-go-soloduel-image build-mmf-go-pool-image
@@ -296,6 +296,7 @@ build-reaper-image: docker build-base-build-image
 clean-images: docker
 	-docker rmi -f open-match-base-build
 	-docker rmi -f $(REGISTRY)/openmatch-backend:$(TAG) $(REGISTRY)/openmatch-backend:$(ALTERNATE_TAG)
+	-docker rmi -f $(REGISTRY)/openmatch-mmfproxy:$(TAG) $(REGISTRY)/openmatch-mmfproxy:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-frontend:$(TAG) $(REGISTRY)/openmatch-frontend:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-mmlogic:$(TAG) $(REGISTRY)/openmatch-mmlogic:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-synchronizer:$(TAG) $(REGISTRY)/openmatch-synchronizer:$(ALTERNATE_TAG)
@@ -321,6 +322,7 @@ lint-chart: build/toolchain/bin/helm$(EXE_EXTENSION) build/toolchain/bin/ct$(EXE
 
 print-chart: build/toolchain/bin/helm$(EXE_EXTENSION)
 	(cd $(REPOSITORY_ROOT)/install/helm; $(HELM) install --name $(OPEN_MATCH_CHART_NAME) --dry-run --debug $(OPEN_MATCH_CHART_NAME))
+
 build/chart/open-match-$(BASE_VERSION).tgz: build/toolchain/bin/helm$(EXE_EXTENSION) lint-chart
 	mkdir -p $(BUILD_DIR)/chart/
 	$(HELM) init --client-only
@@ -342,7 +344,7 @@ install-large-chart: build/toolchain/bin/helm$(EXE_EXTENSION)
 		--set openmatch.image.registry=$(REGISTRY) \
 		--set openmatch.image.tag=$(TAG) \
 		--set grafana.enabled=true \
-		--set jaeger.enabled=true \
+		--set jaeger.enabled=false \
 		--set prometheus.enabled=true \
 		--set redis.enabled=true \
 		--set openmatch.monitoring.stackdriver.enabled=true \
@@ -358,6 +360,7 @@ install-chart: build/toolchain/bin/helm$(EXE_EXTENSION)
 		--set jaeger.enabled=false \
 		--set prometheus.enabled=false \
 		--set redis.enabled=true \
+		--set openmatch.mmfproxy.install=true \
 		--set openmatch.monitoring.stackdriver.enabled=true \
 		--set openmatch.monitoring.stackdriver.gcpProjectId=$(GCP_PROJECT_ID)
 
@@ -706,7 +709,7 @@ gcp-apply-binauthz-policy: build/policies/binauthz.yaml
 
 all-protos: golang-protos http-proxy-golang-protos swagger-json-docs
 
-golang-protos: pkg/pb/backend.pb.go pkg/pb/frontend.pb.go pkg/pb/matchfunction.pb.go pkg/pb/messages.pb.go pkg/pb/mmlogic.pb.go pkg/pb/messages.pb.go pkg/pb/evaluator.pb.go internal/pb/synchronizer.pb.go
+golang-protos: pkg/pb/backend.pb.go pkg/pb/frontend.pb.go pkg/pb/matchfunction.pb.go pkg/pb/simplematchfunction.pb.go pkg/pb/mmlogic.pb.go pkg/pb/messages.pb.go pkg/pb/evaluator.pb.go internal/pb/synchronizer.pb.go
 
 http-proxy-golang-protos: pkg/pb/backend.pb.gw.go pkg/pb/frontend.pb.gw.go pkg/pb/matchfunction.pb.gw.go pkg/pb/messages.pb.gw.go pkg/pb/mmlogic.pb.gw.go pkg/pb/evaluator.pb.gw.go internal/pb/synchronizer.pb.gw.go
 
@@ -742,10 +745,13 @@ api/%.swagger.json: api/%.proto third_party/ build/toolchain/bin/protoc$(EXE_EXT
 		-I $(REPOSITORY_ROOT) -I $(PROTOC_INCLUDES) \
 		--swagger_out=logtostderr=true,allow_delete_body=true:$(REPOSITORY_ROOT)
 
+# DO NOT SUBMIT - For some reason pkg/pb/simplematchfunction.pb.go is triggering rebuild of message.pb.go this will cause flakes in CI if submitted.
+# TO DEBUG run make clean-protos; make all-protos; make -d all-protos
 # Include structure of the protos needs to be called out do the dependency chain is run through properly.
 pkg/pb/backend.pb.go: pkg/pb/messages.pb.go
 pkg/pb/frontend.pb.go: pkg/pb/messages.pb.go
 pkg/pb/matchfunction.pb.go: pkg/pb/messages.pb.go
+pkg/pb/simplematchfunction.pb.go: pkg/pb/messages.pb.go pkg/pb/matchfunction.pb.go
 pkg/pb/mmlogic.pb.go: pkg/pb/messages.pb.go
 pkg/pb/evaluator.pb.go: pkg/pb/messages.pb.go
 internal/pb/synchronizer.pb.go: pkg/pb/messages.pb.go
@@ -784,6 +790,7 @@ all: service-binaries example-binaries tools-binaries
 service-binaries: cmd/minimatch/minimatch$(EXE_EXTENSION) cmd/swaggerui/swaggerui$(EXE_EXTENSION)
 service-binaries: cmd/backend/backend$(EXE_EXTENSION) cmd/frontend/frontend$(EXE_EXTENSION)
 service-binaries: cmd/mmlogic/mmlogic$(EXE_EXTENSION) cmd/synchronizer/synchronizer$(EXE_EXTENSION)
+service-binaries: cmd/mmfproxy/mmfproxy$(EXE_EXTENSION)
 
 example-binaries: example-mmf-binaries example-evaluator-binaries
 example-mmf-binaries: examples/functions/golang/soloduel/soloduel$(EXE_EXTENSION) examples/functions/golang/pool/pool$(EXE_EXTENSION)
@@ -812,12 +819,17 @@ cmd/mmlogic/mmlogic$(EXE_EXTENSION): pkg/pb/mmlogic.pb.go pkg/pb/mmlogic.pb.gw.g
 cmd/synchronizer/synchronizer$(EXE_EXTENSION): internal/pb/synchronizer.pb.go internal/pb/synchronizer.pb.gw.go api/synchronizer.swagger.json
 	cd $(REPOSITORY_ROOT)/cmd/synchronizer; $(GO_BUILD_COMMAND)
 
+cmd/mmfproxy/mmfproxy$(EXE_EXTENSION): pkg/pb/matchfunction.pb.go pkg/pb/matchfunction.pb.gw.go api/matchfunction.swagger.json
+cmd/mmfproxy/mmfproxy$(EXE_EXTENSION): pkg/pb/simplematchfunction.pb.go pkg/pb/simplematchfunction.pb.gw.go api/simplematchfunction.swagger.json
+	cd $(REPOSITORY_ROOT)/cmd/mmfproxy; $(GO_BUILD_COMMAND)
+
 # Note: This list of dependencies is long but only add file references here. If you add a .PHONY dependency make will always rebuild it.
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/backend.pb.go pkg/pb/backend.pb.gw.go api/backend.swagger.json
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/frontend.pb.go pkg/pb/frontend.pb.gw.go api/frontend.swagger.json
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/mmlogic.pb.go pkg/pb/mmlogic.pb.gw.go api/mmlogic.swagger.json
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/evaluator.pb.go pkg/pb/evaluator.pb.gw.go api/evaluator.swagger.json
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/matchfunction.pb.go pkg/pb/matchfunction.pb.gw.go api/matchfunction.swagger.json
+cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/simplematchfunction.pb.go pkg/pb/simplematchfunction.pb.gw.go api/simplematchfunction.swagger.json
 cmd/minimatch/minimatch$(EXE_EXTENSION): pkg/pb/messages.pb.go
 cmd/minimatch/minimatch$(EXE_EXTENSION): internal/pb/synchronizer.pb.go internal/pb/synchronizer.pb.gw.go api/synchronizer.swagger.json
 	cd $(REPOSITORY_ROOT)/cmd/minimatch; $(GO_BUILD_COMMAND)

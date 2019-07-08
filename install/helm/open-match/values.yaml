@@ -106,6 +106,14 @@ openmatch:
     http:
       port: 51500
     porttype: LoadBalancer
+  mmfproxy:
+    install: false
+    replicas: 3
+    grpc:
+      port: 50509
+    http:
+      port: 51509
+    porttype: LoadBalancer
 
   config:
     install: true
@@ -163,6 +171,13 @@ openmatch:
           demo:
             hostname: om-demo
             httpport: "{{.Values.openmatch.demo.http.port}}"
+          mmfproxy:
+            hostname: om-mmfproxy
+            grpcport: "{{.Values.openmatch.mmfproxy.grpc.port}}"
+            httpport: "{{.Values.openmatch.mmfproxy.http.port}}"
+
+        mmfproxy:
+          enabled: "{{.Values.openmatch.mmfproxy.install}}"
 
         synchronizer:
           enabled: false
@@ -269,6 +284,8 @@ openmatch:
       name: openmatch-mmf-go-pool
     e2eevaluator:
       name: openmatch-evaluator-go-simple
+    mmfproxy:
+      name: openmatch-mmfproxy
 
 # https://hub.helm.sh/charts/stable/redis
 # https://github.com/helm/charts/tree/master/stable/redis

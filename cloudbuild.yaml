@@ -165,6 +165,7 @@ artifacts:
         paths:
             - cmd/backend/backend
             - cmd/frontend/frontend
+            - cmd/mmfproxy/mmfproxy
             - cmd/mmlogic/mmlogic
             - cmd/synchronizer/synchronizer
             - cmd/minimatch/minimatch
@@ -185,6 +186,7 @@ artifacts:
 images:
 - 'gcr.io/$PROJECT_ID/openmatch-backend:${_OM_VERSION}-${SHORT_SHA}'
 - 'gcr.io/$PROJECT_ID/openmatch-frontend:${_OM_VERSION}-${SHORT_SHA}'
+- 'gcr.io/$PROJECT_ID/openmatch-mmfproxy:${_OM_VERSION}-${SHORT_SHA}'
 - 'gcr.io/$PROJECT_ID/openmatch-mmlogic:${_OM_VERSION}-${SHORT_SHA}'
 - 'gcr.io/$PROJECT_ID/openmatch-synchronizer:${_OM_VERSION}-${SHORT_SHA}'
 - 'gcr.io/$PROJECT_ID/openmatch-minimatch:${_OM_VERSION}-${SHORT_SHA}'
