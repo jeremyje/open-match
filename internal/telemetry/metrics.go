@@ -20,7 +20,45 @@ import (
 	"go.opencensus.io/stats"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
+	"go.opencensus.io/trace"
 )
+
+// TracedCall tracks and traces invocations of a method.
+type TracedCall struct {
+	name        string
+	description string
+	calls       *stats.Int64Measure
+	latency     *stats.Float64Measure
+}
+
+func (tc *TracedCall) Invoke(ctx context.Context) (context.Context, func(error)) {
+	ctx, span := trace.StartSpan(ctx, tc.name)
+	return ctx, func(err error) {
+		success := "false"
+		if err == nil {
+			success = "true"
+		}
+		IncrementCounter(ctx, tc.calls, tag.Insert(successKey, success))
+		span.End()
+	}
+}
+
+// NewTracedCall creates a new TracedCall object.
+func NewTracedCall(name string, description string) *TracedCall {
+	Latency(name, description)
+	return &TracedCall{
+		name:    name,
+		calls:   Counter(name, description),
+		latency: Latency(name, description),
+	}
+}
+
+// Latency creates a latency metric.
+func Latency(name string, description string, tags ...tag.Key) *stats.Float64Measure {
+	s := stats.Float64(name, "Latency of "+description+" in milliseconds.", "ms")
+	latencyView(s, tags...)
+	return s
+}
 
 // Gauge creates a gauge metric.
 func Gauge(name string, description string, tags ...tag.Key) *stats.Int64Measure {
@@ -82,6 +120,22 @@ func counterView(s *stats.Int64Measure, tags ...tag.Key) *view.View {
 		Measure:     s,
 		Description: s.Description(),
 		Aggregation: view.Count(),
+		TagKeys:     tags,
+	}
+	err := view.Register(v)
+	if err != nil {
+		logger.WithError(err).Infof("cannot register view for metric: %s, it will not be reported", s.Name())
+	}
+	return v
+}
+
+// latencyView converts the measurement into a view for a latency metric.
+func latencyView(s *stats.Float64Measure, tags ...tag.Key) *view.View {
+	v := &view.View{
+		Name:        s.Name(),
+		Measure:     s,
+		Description: s.Description(),
+		Aggregation: view.Distribution(0, 25, 100, 200, 400, 800, 10000),
 		TagKeys:     tags,
 	}
 	err := view.Register(v)
