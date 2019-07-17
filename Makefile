@@ -537,6 +537,8 @@ install-kubernetes-tools: build/toolchain/bin/kubectl$(EXE_EXTENSION) build/tool
 install-protoc-tools: build/toolchain/bin/protoc$(EXE_EXTENSION) build/toolchain/bin/protoc-gen-go$(EXE_EXTENSION) build/toolchain/bin/protoc-gen-grpc-gateway$(EXE_EXTENSION) build/toolchain/bin/protoc-gen-swagger$(EXE_EXTENSION)
 install-openmatch-tools: build/toolchain/bin/certgen$(EXE_EXTENSION) build/toolchain/bin/reaper$(EXE_EXTENSION)
 
+install-prow-tools: build/toolchain/bin/checkconfig$(EXE_EXTENSION) build/toolchain/bin/tackle$(EXE_EXTENSION)
+
 build/toolchain/bin/helm$(EXE_EXTENSION):
 	mkdir -p $(TOOLCHAIN_BIN)
 	mkdir -p $(TOOLCHAIN_DIR)/temp-helm
@@ -613,6 +615,14 @@ build/toolchain/bin/protoc$(EXE_EXTENSION):
 build/toolchain/bin/protoc-gen-go$(EXE_EXTENSION):
 	mkdir -p $(TOOLCHAIN_BIN)
 	cd $(TOOLCHAIN_BIN) && $(GO) build -pkgdir . github.com/golang/protobuf/protoc-gen-go
+
+build/toolchain/bin/checkconfig$(EXE_EXTENSION):
+	mkdir -p $(TOOLCHAIN_BIN)
+	cd $(TOOLCHAIN_BIN) && $(GO) build -pkgdir . k8s.io/test-infra/prow/cmd/checkconfig
+
+build/toolchain/bin/tackle$(EXE_EXTENSION):
+	mkdir -p $(TOOLCHAIN_BIN)
+	cd $(TOOLCHAIN_BIN) && $(GO) build -pkgdir . k8s.io/test-infra/prow/cmd/tackle
 
 build/toolchain/bin/protoc-gen-grpc-gateway$(EXE_EXTENSION):
 	cd $(TOOLCHAIN_BIN) && $(GO) build -pkgdir . github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
@@ -1084,6 +1094,8 @@ sleep-10:
 sleep-30:
 	sleep 30
 
+cipush: install-prow-tools
+	$(KUBECTL) create configmap plugins --from-file=plugins.yaml=plugins.yaml --dry-run -o yaml | kubectl replace configmap plugins -f -
 # Prevents users from running with sudo.
 # There's an exception for Google Cloud Build because it runs as root.
 no-sudo:
