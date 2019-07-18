@@ -43,6 +43,11 @@ func (is *instrumentedService) Close() error {
 	return is.s.Close()
 }
 
+// GetMultitentPolicy returns the multi-tenancy policy of the 
+func (is *instrumentedService) GetMultitentPolicy() *MultitenantPolicy {
+	return is.GetMultitentPolicy()
+}
+
 // HealthCheck indicates if the database is reachable.
 func (is *instrumentedService) HealthCheck(ctx context.Context) error {
 	err := is.s.HealthCheck(ctx)

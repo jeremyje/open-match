@@ -200,6 +200,10 @@
         "profile": {
           "$ref": "#/definitions/apiMatchProfile",
           "description": "The MatchProfile that describes the Match that this MatchFunction needs to\ngenerate proposals for."
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster."
         }
       }
     },
@@ -229,6 +233,10 @@
         "assignment": {
           "$ref": "#/definitions/apiAssignment",
           "description": "Assignment associated with the Ticket."
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster."
         }
       },
       "description": "A Ticket is a basic matchmaking entity in Open Match. In order to enter\nmatchmaking using Open Match, the client should generate a Ticket, passing in\nthe properties to be associated with this Ticket. Open Match will generate an\nID for a Ticket during creation. A Ticket could be used to represent an\nindividual 'Player' or a 'Group' of players. Open Match will not interpret\nwhat the Ticket represents but just treat it as a matchmaking unit with a set\nof properties. Open Match stores the Ticket in state storage and enables an\nAssignment to be associated with this Ticket."

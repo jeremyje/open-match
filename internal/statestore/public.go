@@ -56,6 +56,9 @@ type Service interface {
 
 	// Closes the connection to the underlying storage.
 	Close() error
+
+	// GetMultitenantPolicy gets the multi-tenancy policy of the backing storage.
+	GetMultitenantPolicy() *MultitenantPolicy
 }
 
 // New creates a Service based on the configuration.

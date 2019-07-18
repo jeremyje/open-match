@@ -133,6 +133,8 @@ openmatch:
     mountPath: /app/config
     files:
       matchmaker_config.yaml:
+        multitenancy:
+          required: true
         logging:
           level: debug
           format: text

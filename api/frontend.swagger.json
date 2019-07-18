@@ -24,6 +24,86 @@
     "application/json"
   ],
   "paths": {
+    "/v1/frontend/tenants/{tenant_id}/tickets": {
+      "post": {
+        "summary": "CreateTicket will create a new ticket, assign a Ticket ID to it and put the\nTicket in state storage. It will then look through the 'properties' field\nfor the attributes defined as indices the matchmakaking config. If the\nattributes exist and are valid integers, they will be indexed. Creating a\nticket adds the Ticket to the pool of Tickets considered for matchmaking.",
+        "operationId": "CreateTicket2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiCreateTicketResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "description": "Ticket object with the properties of the Ticket to be created.",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/apiTicket"
+            }
+          }
+        ],
+        "tags": [
+          "Frontend"
+        ]
+      }
+    },
+    "/v1/frontend/tenants/{tenant_id}/tickets/{ticket_id}": {
+      "delete": {
+        "summary": "DeleteTicket removes the Ticket from state storage and from corresponding\nconfigured indices and lazily removes the ticket from state storage.\nDeleting a ticket immediately stops the ticket from being\nconsidered for future matchmaking requests, yet when the ticket itself will be deleted\nis undeterministic. Users may still be able to assign/get a ticket after calling DeleteTicket on it.",
+        "operationId": "DeleteTicket2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/apiDeleteTicketResponse"
+            }
+          },
+          "404": {
+            "description": "Returned when the resource does not exist.",
+            "schema": {
+              "format": "string"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "tenant_id",
+            "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ticket_id",
+            "description": "Ticket ID of the Ticket to be deleted.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Frontend"
+        ]
+      }
+    },
     "/v1/frontend/tickets": {
       "post": {
         "summary": "CreateTicket will create a new ticket, assign a Ticket ID to it and put the\nTicket in state storage. It will then look through the 'properties' field\nfor the attributes defined as indices the matchmakaking config. If the\nattributes exist and are valid integers, they will be indexed. Creating a\nticket adds the Ticket to the pool of Tickets considered for matchmaking.",
@@ -82,6 +162,13 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -111,6 +198,13 @@
             "description": "Ticket ID of the Ticket to be deleted.",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
@@ -143,6 +237,13 @@
             "description": "Ticket ID of the Ticket to get updates on.",
             "in": "path",
             "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tenant_id",
+            "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.",
+            "in": "query",
+            "required": false,
             "type": "string"
           }
         ],
@@ -177,6 +278,10 @@
         "ticket": {
           "$ref": "#/definitions/apiTicket",
           "description": "Ticket object with the properties of the Ticket to be created."
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster."
         }
       }
     },
@@ -215,6 +320,10 @@
         "assignment": {
           "$ref": "#/definitions/apiAssignment",
           "description": "Assignment associated with the Ticket."
+        },
+        "tenant_id": {
+          "type": "string",
+          "description": "Tenant ID is the ID used to differentiate tenants in the same Open Match cluster."
         }
       },
       "description": "A Ticket is a basic matchmaking entity in Open Match. In order to enter\nmatchmaking using Open Match, the client should generate a Ticket, passing in\nthe properties to be associated with this Ticket. Open Match will generate an\nID for a Ticket during creation. A Ticket could be used to represent an\nindividual 'Player' or a 'Group' of players. Open Match will not interpret\nwhat the Ticket represents but just treat it as a matchmaking unit with a set\nof properties. Open Match stores the Ticket in state storage and enables an\nAssignment to be associated with this Ticket."

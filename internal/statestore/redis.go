@@ -42,6 +42,12 @@ type redisBackend struct {
 	healthCheckPool *redis.Pool
 	redisPool       *redis.Pool
 	cfg             config.View
+	mtp             *MultitenantPolicy
+}
+
+// GetMultitentPolicy returns the multi-tenancy policy of the
+func (rb *redisBackend) GetMultitentPolicy() *MultitenantPolicy {
+	return rb.mtp
 }
 
 // Close the connection to the database.
@@ -95,6 +101,9 @@ func newRedis(cfg config.View) Service {
 		healthCheckPool: healthCheckPool,
 		redisPool:       pool,
 		cfg:             cfg,
+		mtp: &MultitenantPolicy{
+			cfg: cfg,
+		},
 	}
 }
 
@@ -127,6 +136,9 @@ func (rb *redisBackend) connect(ctx context.Context) (redis.Conn, error) {
 
 // CreateTicket creates a new Ticket in the state storage. If the id already exists, it will be overwritten.
 func (rb *redisBackend) CreateTicket(ctx context.Context, ticket *pb.Ticket) error {
+	if err := rb.mtp.Verify(ctx, ticket.GetTenantId()); err != nil {
+		return err
+	}
 	redisConn, err := rb.connect(ctx)
 	if err != nil {
 		return err

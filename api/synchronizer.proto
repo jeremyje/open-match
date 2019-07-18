@@ -55,6 +55,9 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 };
 
 message RegisterRequest {
+
+  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
+  string tenant_id = 1;
 }
 
 message RegisterResponse {
@@ -68,6 +71,9 @@ message EvaluateProposalsRequest {
 
   // Identifier for this request issued during request registration.
   string id = 2;
+
+  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
+  string tenant_id = 3;
 }
 
 message EvaluateProposalsResponse {
