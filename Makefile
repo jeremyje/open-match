@@ -222,8 +222,8 @@ retag-images: retag-service-images retag-example-images retag-tool-images retag-
 
 retag-service-images: retag-backend-image retag-frontend-image retag-mmlogic-image retag-minimatch-image retag-synchronizer-image retag-swaggerui-image
 retag-example-images: retag-demo-images retag-mmf-example-images retag-evaluator-example-images
-retag-demo-images: retag-mmf-go-soloduel-image retag-demo-image
-retag-mmf-example-images: retag-mmf-go-soloduel-image retag-mmf-go-pool-image
+retag-demo-images: retag-mmf-go-soloduel-imageretag-mmf-cs-soloduel-image retag-demo-image
+retag-mmf-example-images: retag-mmf-go-soloduel-image retag-mmf-cs-soloduel-image retag-mmf-go-pool-image
 retag-evaluator-example-images: retag-evaluator-go-simple-image
 retag-tool-images: retag-reaper-image
 retag-stress-test-images: retag-stress-frontend-image
@@ -242,8 +242,8 @@ push-images: push-service-images push-example-images push-tool-images push-stres
 
 push-service-images: push-backend-image push-frontend-image push-mmlogic-image push-minimatch-image push-synchronizer-image push-swaggerui-image
 push-example-images: push-demo-images push-mmf-example-images push-evaluator-example-images
-push-demo-images: push-mmf-go-soloduel-image push-demo-image
-push-mmf-example-images: push-mmf-go-soloduel-image push-mmf-go-pool-image
+push-demo-images: push-mmf-go-soloduel-image push-mmf-cs-soloduel-image push-demo-image
+push-mmf-example-images: push-mmf-go-soloduel-image push-mmf-cs-soloduel-image push-mmf-go-pool-image
 push-evaluator-example-images: push-evaluator-go-simple-image
 push-tool-images: push-reaper-image
 push-stress-test-images: push-stress-frontend-image
@@ -267,8 +267,8 @@ build-images: build-service-images build-example-images build-tool-images build-
 
 build-service-images: build-backend-image build-frontend-image build-mmlogic-image build-minimatch-image build-synchronizer-image build-swaggerui-image
 build-example-images: build-demo-images build-mmf-example-images build-evaluator-example-images
-build-demo-images: build-mmf-go-soloduel-image build-demo-image
-build-mmf-example-images: build-mmf-go-soloduel-image build-mmf-go-pool-image
+build-demo-images: build-mmf-go-soloduel-image build-mmf-cs-soloduel-image build-demo-image
+build-mmf-example-images: build-mmf-go-soloduel-image build-mmf-cs-soloduel-image build-mmf-go-pool-image
 build-evaluator-example-images: build-evaluator-go-simple-image
 build-tool-images: build-reaper-image
 build-stress-test-images: build-stress-frontend-image
@@ -286,6 +286,9 @@ build-demo-image: docker build-base-build-image
 
 build-mmf-go-soloduel-image: docker build-base-build-image
 	docker build -f examples/functions/golang/soloduel/Dockerfile -t $(REGISTRY)/openmatch-mmf-go-soloduel:$(TAG) -t $(REGISTRY)/openmatch-mmf-go-soloduel:$(ALTERNATE_TAG) .
+
+build-mmf-cs-soloduel-image: docker build-base-build-image
+	docker build -f examples/functions/csharp/soloduel/Dockerfile -t $(REGISTRY)/openmatch-mmf-cs-soloduel:$(TAG) -t $(REGISTRY)/openmatch-mmf-cs-soloduel:$(ALTERNATE_TAG) .
 
 build-mmf-go-pool-image: docker build-base-build-image
 	docker build -f examples/functions/golang/pool/Dockerfile -t $(REGISTRY)/openmatch-mmf-go-pool:$(TAG) -t $(REGISTRY)/openmatch-mmf-go-pool:$(ALTERNATE_TAG) .
@@ -309,6 +312,7 @@ clean-images: docker
 	-docker rmi -f $(REGISTRY)/openmatch-swaggerui:$(TAG) $(REGISTRY)/openmatch-swaggerui:$(ALTERNATE_TAG)
 
 	-docker rmi -f $(REGISTRY)/openmatch-mmf-go-soloduel:$(TAG) $(REGISTRY)/openmatch-mmf-go-soloduel:$(ALTERNATE_TAG)
+	-docker rmi -f $(REGISTRY)/openmatch-mmf-cs-soloduel:$(TAG) $(REGISTRY)/openmatch-mmf-cs-soloduel:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-mmf-go-pool:$(TAG) $(REGISTRY)/openmatch-mmf-go-pool:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-evaluator-go-simple:$(TAG) $(REGISTRY)/openmatch-evaluator-go-simple:$(ALTERNATE_TAG)
 	-docker rmi -f $(REGISTRY)/openmatch-demo:$(TAG) $(REGISTRY)/openmatch-demo:$(ALTERNATE_TAG)
