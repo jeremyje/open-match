@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	corev1 "k8s.io/api/core/v1"
@@ -43,14 +44,20 @@ type clusterOM struct {
 	namespace  string
 	t          *testing.T
 	mc         *util.MultiClose
+	tenantID string
 }
 
 func (com *clusterOM) withT(t *testing.T) OM {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		panic(err)
+	}
 	return &clusterOM{
 		kubeClient: com.kubeClient,
 		namespace:  com.namespace,
 		t:          t,
 		mc:         util.NewMultiClose(),
+		tenantID: t.Name() + "-" + u.String(),
 	}
 }
 
@@ -152,7 +159,7 @@ func (com *clusterOM) HealthCheck() error {
 }
 
 func (com *clusterOM) Context() context.Context {
-	return context.Background()
+	return metadata.AppendToOutgoingContext(context.Background(), "Tenant-ID", iom.tenantID)
 }
 
 func (com *clusterOM) cleanup() {

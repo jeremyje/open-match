@@ -19,8 +19,10 @@ import (
 	"context"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 	simple "open-match.dev/open-match/examples/evaluator/golang/simple/evaluate"
 	pool "open-match.dev/open-match/examples/functions/golang/pool/mmf"
 	"open-match.dev/open-match/internal/app/minimatch"
@@ -34,11 +36,12 @@ import (
 )
 
 type inmemoryOM struct {
-	mainTc *rpcTesting.TestContext
-	mmfTc  *rpcTesting.TestContext
-	evalTc *rpcTesting.TestContext
-	t      *testing.T
-	mc     *util.MultiClose
+	mainTc   *rpcTesting.TestContext
+	mmfTc    *rpcTesting.TestContext
+	evalTc   *rpcTesting.TestContext
+	t        *testing.T
+	mc       *util.MultiClose
+	tenantID string
 }
 
 func (iom *inmemoryOM) withT(t *testing.T) OM {
@@ -46,12 +49,18 @@ func (iom *inmemoryOM) withT(t *testing.T) OM {
 	mainTc := createMinimatchForTest(t, evalTc)
 	mmfTc := createMatchFunctionForTest(t, mainTc)
 
+	u, err := uuid.NewRandom()
+	if err != nil {
+		panic(err)
+	}
+
 	om := &inmemoryOM{
-		mainTc: mainTc,
-		mmfTc:  mmfTc,
-		evalTc: evalTc,
-		t:      t,
-		mc:     util.NewMultiClose(),
+		mainTc:   mainTc,
+		mmfTc:    mmfTc,
+		evalTc:   evalTc,
+		t:        t,
+		tenantID: t.Name() + "-" + u.String(),
+		mc:       util.NewMultiClose(),
 	}
 	return om
 }
@@ -99,7 +108,7 @@ func (iom *inmemoryOM) HealthCheck() error {
 }
 
 func (iom *inmemoryOM) Context() context.Context {
-	return iom.mainTc.Context()
+	return metadata.AppendToOutgoingContext(iom.mainTc.Context(), "Tenant-ID", iom.tenantID)
 }
 
 func (iom *inmemoryOM) cleanup() {

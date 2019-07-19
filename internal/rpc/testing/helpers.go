@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"open-match.dev/open-match/internal/rpc"
 	"open-match.dev/open-match/internal/util"
 	netlistenerTesting "open-match.dev/open-match/internal/util/netlistener/testing"
@@ -121,7 +122,11 @@ func (tc *TestContext) Close() {
 
 // Context returns a context appropriate for calling an RPC.
 func (tc *TestContext) Context() context.Context {
-	return context.Background()
+	ctx := context.Background()
+	if tc.t != nil {
+		ctx = metadata.AppendToOutgoingContext(context.Background(), "Test-Method", tc.t.Name())
+	}
+	return ctx
 }
 
 // MustGRPC returns a grpc client configured to connect to an endpoint.

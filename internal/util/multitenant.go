@@ -12,38 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package statestore
+// Package util provides utilities for net.Listener.
+package util
 
 import (
 	"context"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"open-match.dev/open-match/internal/config"
+	"google.golang.org/grpc/metadata"
 )
 
-// MultitenantPolicy controls the logic for how multi-tenancy works.
-type MultitenantPolicy struct {
-	cfg config.View
-}
+const (
+	metadataNameTenantID = "Multitenancy-TenantID"
+)
 
-func (mtp *MultitenantPolicy) isRequired() {
-	return mtp.cfg.GetBool("multitenancy.required")
-}
-
-func (mtp *MultitenantPolicy) getTenantIDFromContext(ctx context.Context) string {
+// GetTenantIDFromContext returns the Tenant ID from a RPC context.
+func GetTenantIDFromContext(ctx context.Context) string {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return ""
 	}
-
+	values := md.Get(metadataNameTenantID)
+	if len(values) == 1 {
+		return values[0]
+	}
+	return ""
 }
 
-// Verify the tenant ID
-func (mtp *MultitenantPolicy) Verify(ctx context.Context) error {
-
-	if mtp.isRequired() && tenantID == "" {
-		return status.Error(codes.Internal, "tenant_id is required for this request")
-	}
-	return nil
+// AppendTenantID adds the Tenant ID to the request context.
+func AppendTenantID(ctx context.Context, tenantID string) context.Context {
+	return metadata.AppendToOutgoingContext(ctx, metadataNameTenantID, tenantID)
 }
