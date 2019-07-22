@@ -22,12 +22,25 @@ import (
 	"open-match.dev/open-match/internal/statestore"
 )
 
+var (
+	mredis *miniredis.Miniredis
+)
+
+func init() {
+	mredis, err = miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+}
+
 // New creates a new in memory Redis instance for testing.
 func New(t *testing.T, cfg config.Mutable) func() {
-	mredis, err := miniredis.Run()
-	if err != nil {
-		t.Fatalf("failed to create miniredis, %v", err)
-	}
+	/*
+		mredis, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("failed to create miniredis, %v", err)
+		}
+	*/
 	cfg.Set("redis.hostname", mredis.Host())
 	cfg.Set("redis.port", mredis.Port())
 	cfg.Set("redis.pool.maxIdle", PoolMaxIdle)
@@ -42,7 +55,7 @@ func New(t *testing.T, cfg config.Mutable) func() {
 	cfg.Set("backoff.maxElapsedTime", MaxElapsedTime)
 
 	return func() {
-		mredis.Close()
+		//mredis.Close()
 	}
 }
 

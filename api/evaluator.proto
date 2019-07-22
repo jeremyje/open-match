@@ -57,9 +57,6 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 message EvaluateRequest {
   // List of Matches to evaluate.
   repeated api.Match matches = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message EvaluateResponse {

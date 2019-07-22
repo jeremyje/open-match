@@ -72,9 +72,6 @@ message FetchMatchesRequest {
 
   // MatchProfiles for which this MatchFunction should be executed.
   repeated MatchProfile profiles = 2;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 3;
 }
 
 message FetchMatchesResponse {
@@ -89,9 +86,6 @@ message AssignTicketsRequest {
 
   // Assignment to be associated with the Ticket IDs.
   Assignment assignment = 2;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 3;
 }
 
 message AssignTicketsResponse {}

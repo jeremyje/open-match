@@ -44,7 +44,7 @@ type clusterOM struct {
 	namespace  string
 	t          *testing.T
 	mc         *util.MultiClose
-	tenantID string
+	tenantID   string
 }
 
 func (com *clusterOM) withT(t *testing.T) OM {
@@ -57,7 +57,7 @@ func (com *clusterOM) withT(t *testing.T) OM {
 		namespace:  com.namespace,
 		t:          t,
 		mc:         util.NewMultiClose(),
-		tenantID: t.Name() + "-" + u.String(),
+		tenantID:   t.Name() + "-" + u.String(),
 	}
 }
 

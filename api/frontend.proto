@@ -57,9 +57,6 @@ option (grpc.gateway.protoc_gen_swagger.options.openapiv2_swagger) = {
 message CreateTicketRequest {
   // Ticket object with the properties of the Ticket to be created.
   Ticket ticket = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message CreateTicketResponse {
@@ -70,9 +67,6 @@ message CreateTicketResponse {
 message DeleteTicketRequest {
   // Ticket ID of the Ticket to be deleted.
   string ticket_id = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message DeleteTicketResponse {}
@@ -80,17 +74,11 @@ message DeleteTicketResponse {}
 message GetTicketRequest {
   // Ticket ID of the Ticket to fetch.
   string ticket_id = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message GetAssignmentsRequest {
   // Ticket ID of the Ticket to get updates on.
   string ticket_id = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message GetAssignmentsResponse {
@@ -110,10 +98,6 @@ service Frontend {
     option (google.api.http) = {
       post: "/v1/frontend/tickets"
       body: "*"
-			additional_bindings {
-				post: "/v1/frontend/tenants/{tenant_id}/tickets"
-        body: "ticket"
-			}
     };
   }
 
@@ -125,9 +109,6 @@ service Frontend {
   rpc DeleteTicket(DeleteTicketRequest) returns (DeleteTicketResponse) {
     option (google.api.http) = {
       delete: "/v1/frontend/tickets/{ticket_id}"
-			additional_bindings {
-				delete: "/v1/frontend/tenants/{tenant_id}/tickets/{ticket_id}"
-			}
     };
   }
 

@@ -43,9 +43,9 @@ func (is *instrumentedService) Close() error {
 	return is.s.Close()
 }
 
-// GetMultitentPolicy returns the multi-tenancy policy of the 
-func (is *instrumentedService) GetMultitentPolicy() *MultitenantPolicy {
-	return is.GetMultitentPolicy()
+// GetMultitenantPolicy returns the multi-tenancy policy of the
+func (is *instrumentedService) GetMultitenantPolicy() *MultitenantPolicy {
+	return is.GetMultitenantPolicy()
 }
 
 // HealthCheck indicates if the database is reachable.

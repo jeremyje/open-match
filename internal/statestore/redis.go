@@ -48,7 +48,7 @@ type redisBackend struct {
 }
 
 // GetMultitentPolicy returns the multi-tenancy policy of the
-func (rb *redisBackend) GetMultitentPolicy() *MultitenantPolicy {
+func (rb *redisBackend) GetMultitenantPolicy() *MultitenantPolicy {
 	return rb.mtp
 }
 
@@ -706,14 +706,14 @@ func getRedisID(ctx context.Context, obj interface{}) string {
 	case string:
 		return prefix + t
 	case *pb.Ticket:
-		return prefix + t.GetTicketID()
+		return prefix + t.GetId()
 	default:
 		panic("bad type")
 	}
 }
 
 func getTenantIDAsPrefix(ctx context.Context) string {
-	tenantID := util.GetTenantIDFromContextAsPrefix(ctx)
+	tenantID := util.GetTenantIDFromContext(ctx)
 	if tenantID == "" {
 		return ""
 	}

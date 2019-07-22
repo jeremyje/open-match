@@ -15,10 +15,6 @@
 package statestore
 
 import (
-	"context"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"open-match.dev/open-match/internal/config"
 )
 
@@ -27,23 +23,6 @@ type MultitenantPolicy struct {
 	cfg config.View
 }
 
-func (mtp *MultitenantPolicy) isRequired() {
+func (mtp *MultitenantPolicy) isRequired() bool {
 	return mtp.cfg.GetBool("multitenancy.required")
-}
-
-func (mtp *MultitenantPolicy) getTenantIDFromContext(ctx context.Context) string {
-	md, ok := metadata.FromIncomingContext(ctx)
-	if !ok {
-		return ""
-	}
-
-}
-
-// Verify the tenant ID
-func (mtp *MultitenantPolicy) Verify(ctx context.Context) error {
-
-	if mtp.isRequired() && tenantID == "" {
-		return status.Error(codes.Internal, "tenant_id is required for this request")
-	}
-	return nil
 }

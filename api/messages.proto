@@ -37,9 +37,6 @@ message Ticket {
 
   // Assignment associated with the Ticket.
   Assignment assignment = 3;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 4;
 }
 
 // An Assignment object represents the assignment associated with a Ticket. Open

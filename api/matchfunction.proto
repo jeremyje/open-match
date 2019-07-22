@@ -58,9 +58,6 @@ message RunRequest {
   // The MatchProfile that describes the Match that this MatchFunction needs to
   // generate proposals for.
   MatchProfile profile = 1;
-
-  // Tenant ID is the ID used to differentiate tenants in the same Open Match cluster.
-  string tenant_id = 2;
 }
 
 message RunResponse {
