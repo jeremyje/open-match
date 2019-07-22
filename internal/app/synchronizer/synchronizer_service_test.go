@@ -15,10 +15,7 @@
 package synchronizer
 
 import (
-	"sync"
-	"testing"
-	"time"
-
+	"context"
 	"github.com/rs/xid"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -26,16 +23,20 @@ import (
 	"google.golang.org/grpc/status"
 	ipb "open-match.dev/open-match/internal/pb"
 	statestoreTesting "open-match.dev/open-match/internal/statestore/testing"
+	"open-match.dev/open-match/internal/util"
 	utilTesting "open-match.dev/open-match/internal/util/testing"
 	"open-match.dev/open-match/pkg/pb"
+	"sync"
+	"testing"
+	"time"
 )
 
 type testEvaluatorClient struct {
-	evalFunc func([]*pb.Match) ([]*pb.Match, error)
+	evalFunc func(context.Context, []*pb.Match) ([]*pb.Match, error)
 }
 
-func (s *testEvaluatorClient) evaluate(proposals []*pb.Match) ([]*pb.Match, error) {
-	return s.evalFunc(proposals)
+func (s *testEvaluatorClient) evaluate(ctx context.Context, proposals []*pb.Match) ([]*pb.Match, error) {
+	return s.evalFunc(ctx, proposals)
 }
 
 type testCallData struct {
@@ -199,8 +200,9 @@ func TestSynchronizerService(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
+			ctx := utilTesting.NewContext(t)
 			tc.testEvaluator.eval = &testEvaluatorClient{
-				evalFunc: func(proposals []*pb.Match) ([]*pb.Match, error) {
+				evalFunc: func(ctx context.Context, proposals []*pb.Match) ([]*pb.Match, error) {
 					if tc.testEvaluator.evalErr != nil {
 						return nil, tc.testEvaluator.evalErr
 					}
@@ -215,12 +217,12 @@ func TestSynchronizerService(t *testing.T) {
 				},
 			}
 
-			runEvaluationTest(t, tc)
+			runEvaluationTest(ctx, t, tc)
 		})
 	}
 }
 
-func runEvaluationTest(t *testing.T, tc *testData) {
+func runEvaluationTest(ctx context.Context, t *testing.T, tc *testData) {
 	require := require.New(t)
 	// Generate a config view with paths to the manifests
 	cfg := viper.New()

@@ -88,7 +88,7 @@ func TestAssignTickets(t *testing.T) {
 			test := test
 			t.Run(test.description, func(t *testing.T) {
 				t.Parallel()
-				ctx := om.Context()
+				//ctx := om.Context()
 				_, err := be.AssignTickets(ctx, &pb.AssignTicketsRequest{TicketIds: test.ticketIds, Assignment: test.assignment})
 				assert.Equal(t, test.wantCode, status.Convert(err).Code())
 
@@ -114,9 +114,9 @@ func TestTicketLifeCycle(t *testing.T) {
 
 	om, closer := e2e.New(t)
 	defer closer()
+	ctx := om.Context()
 	fe := om.MustFrontendGRPC()
 	assert.NotNil(fe)
-	ctx := om.Context()
 
 	ticket := &pb.Ticket{
 		Properties: structs.Struct{

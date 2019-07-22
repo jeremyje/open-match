@@ -102,10 +102,12 @@ func TestMinimatch(t *testing.T) {
 		fcGen       func(e2e.OM) *pb.FunctionConfig
 		description string
 	}{
-		{
-			func(om e2e.OM) *pb.FunctionConfig { return om.MustMmfConfigGRPC() },
-			"grpc config",
-		},
+		/*
+			{
+				func(om e2e.OM) *pb.FunctionConfig { return om.MustMmfConfigGRPC() },
+				"grpc config",
+			},
+		*/
 		{
 			func(om e2e.OM) *pb.FunctionConfig { return om.MustMmfConfigHTTP() },
 			"http config",
@@ -126,10 +128,10 @@ func TestMinimatch(t *testing.T) {
 				om, closer := e2e.New(t)
 				defer closer()
 				fc := test.fcGen(om)
+				ctx := om.Context()
 
 				fe := om.MustFrontendGRPC()
 				mml := om.MustMmLogicGRPC()
-				ctx := om.Context()
 
 				// Create all the tickets and validate ticket creation succeeds. Also populate ticket ids
 				// to expected player pools.
@@ -220,7 +222,7 @@ func testFetchMatches(ctx context.Context, t *testing.T, poolTickets map[string]
 		}
 
 		// Verify calling fetch matches twice within ttl interval won't yield new results
-		br, err = be.FetchMatches(om.Context(), &pb.FetchMatchesRequest{
+		br, err = be.FetchMatches(ctx, &pb.FetchMatchesRequest{
 			Config:   fc,
 			Profiles: []*pb.MatchProfile{{Name: profile.name, Pools: profile.pools}},
 		})

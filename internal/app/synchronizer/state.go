@@ -15,6 +15,7 @@
 package synchronizer
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 	"google.golang.org/grpc/status"
 	"open-match.dev/open-match/internal/config"
 	"open-match.dev/open-match/internal/statestore"
+	"open-match.dev/open-match/internal/util"
 	"open-match.dev/open-match/pkg/pb"
 )
 
@@ -62,8 +64,10 @@ type synchronizerData struct {
 	resultsReady    chan struct{}  // Signal completion of evaluation and availability of results.
 }
 
-// The service implementing the Synchronizer API that synchronizes the evaluation
-// of proposals from Match functions.
+// The state information for handling a synchronized evaluation cycle.
+// This struct performs the necessary coordination between incoming requests,
+// waiting for the cross-request evaluation to complete and returns the results
+// of those evaluations.
 type synchronizerState struct {
 	cfg        config.View        // Open Match configuration
 	cycleData  *synchronizerData  // State for the current synchronization cycle
@@ -72,9 +76,10 @@ type synchronizerState struct {
 	idleCond   *sync.Cond         // Signal any blocked registrations to proceed
 	status     synchronizerStatus // Current status of the Synchronizer
 	stateMutex sync.Mutex         // Mutex to check on current state and take specific actions.
+	namespace  string
 }
 
-func newSynchronizerState(cfg config.View, eval evaluator, store statestore.Service) *synchronizerState {
+func newSynchronizerState(cfg config.View, eval evaluator, store statestore.Service, namespace string) *synchronizerState {
 	syncState := &synchronizerState{
 		status: statusIdle,
 		cfg:    cfg,
@@ -84,6 +89,7 @@ func newSynchronizerState(cfg config.View, eval evaluator, store statestore.Serv
 			idToRequestData: make(map[string]*requestData),
 			resultsReady:    make(chan struct{}),
 		},
+		namespace: namespace,
 	}
 	syncState.idleCond = sync.NewCond(&syncState.stateMutex)
 	return syncState
@@ -157,7 +163,7 @@ func (syncState *synchronizerState) fetchResults(id string) ([]*pb.Match, error)
 // for all the result processing (by fetchMatches) to be compelted before changing the
 // synchronizer state to idle.
 // NOTE: This method is always called while holding the synchronizer state mutex.
-func (syncState *synchronizerState) evaluate() {
+func (syncState *synchronizerState) evaluate(ctx context.Context) {
 	aggregateProposals := []*pb.Match{}
 	proposalMap := make(map[string]string)
 	for id, data := range syncState.cycleData.idToRequestData {
@@ -170,7 +176,7 @@ func (syncState *synchronizerState) evaluate() {
 	logger.WithFields(logrus.Fields{
 		"proposals": getMatchIds(aggregateProposals),
 	}).Info("Requesting evaluation of proposals")
-	results, err := syncState.eval.evaluate(aggregateProposals)
+	results, err := syncState.eval.evaluate(ctx, aggregateProposals)
 	if err != nil {
 		// Evaluation failed. Set the error on the synchronization cycle data and
 		// signal completion of evaluation. Do not process any partial results.
@@ -223,7 +229,7 @@ func (syncState *synchronizerState) trackProposalWindow() {
 	defer syncState.stateMutex.Unlock()
 	logger.Info("Changing status from proposalCollection to evaluation")
 	syncState.status = statusEvaluation
-	syncState.evaluate()
+	syncState.evaluate(util.NewNamespacedContext(syncState.namespace))
 }
 
 func (syncState *synchronizerState) registrationInterval() time.Duration {

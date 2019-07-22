@@ -25,6 +25,7 @@ import (
 	"open-match.dev/open-match/internal/config"
 	"open-match.dev/open-match/internal/statestore"
 	"open-match.dev/open-match/internal/telemetry"
+	"open-match.dev/open-match/internal/util"
 	"open-match.dev/open-match/pkg/pb"
 )
 
@@ -112,11 +113,12 @@ func doDeleteTicket(ctx context.Context, id string, store statestore.Service) er
 		}).Error("failed to deindex the ticket")
 		return err
 	}
+	deferredContext := util.DeferredContext(ctx)
 
 	//'lazy' ticket delete that should be called after a ticket
 	// has been deindexed.
 	go func() {
-		err := store.DeleteTicket(context.Background(), id)
+		err := store.DeleteTicket(deferredContext(), id)
 		if err != nil {
 			logger.WithFields(logrus.Fields{
 				"error": err.Error(),

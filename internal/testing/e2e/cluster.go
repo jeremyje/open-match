@@ -39,18 +39,20 @@ import (
 )
 
 type clusterOM struct {
-	kubeClient kubernetes.Interface
-	namespace  string
-	t          *testing.T
-	mc         *util.MultiClose
+	kubeClient          kubernetes.Interface
+	kubernetesNamespace string
+	t                   *testing.T
+	mc                  *util.MultiClose
+	openMatchNamespace  string
 }
 
 func (com *clusterOM) withT(t *testing.T) OM {
 	return &clusterOM{
-		kubeClient: com.kubeClient,
-		namespace:  com.namespace,
-		t:          t,
-		mc:         util.NewMultiClose(),
+		kubeClient:          com.kubeClient,
+		kubernetesNamespace: com.kubernetesNamespace,
+		t:                   t,
+		mc:                  util.NewMultiClose(),
+		openMatchNamespace:  mustNamespace(t),
 	}
 }
 
@@ -100,7 +102,7 @@ func (com *clusterOM) MustMmfConfigHTTP() *pb.FunctionConfig {
 }
 
 func (com *clusterOM) getAddressFromServiceName(serviceName, portName string) (string, int32) {
-	svc, err := com.kubeClient.CoreV1().Services(com.namespace).Get(serviceName, metav1.GetOptions{})
+	svc, err := com.kubeClient.CoreV1().Services(com.kubernetesNamespace).Get(serviceName, metav1.GetOptions{})
 	if err != nil {
 		com.t.Fatalf("cannot get service definition for %s", serviceName)
 	}
@@ -139,7 +141,7 @@ func (com *clusterOM) getGRPCClientFromServiceName(serviceName string) (*grpc.Cl
 }
 
 func (com *clusterOM) HealthCheck() error {
-	podList, err := com.kubeClient.CoreV1().Pods(com.namespace).List(metav1.ListOptions{})
+	podList, err := com.kubeClient.CoreV1().Pods(com.kubernetesNamespace).List(metav1.ListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "cannot get pods list")
 	}
@@ -152,7 +154,7 @@ func (com *clusterOM) HealthCheck() error {
 }
 
 func (com *clusterOM) Context() context.Context {
-	return context.Background()
+	return util.NewNamespacedContext(com.openMatchNamespace)
 }
 
 func (com *clusterOM) cleanup() {
@@ -168,7 +170,7 @@ func fileExists(name string) bool {
 	return err == nil
 }
 
-func newClusterOM(kubeconfig string, kubeconfigFromEnv string, namespace string) (*clusterOM, error) {
+func newClusterOM(kubeconfig string, kubeconfigFromEnv string, kubernetesNamespace string) (*clusterOM, error) {
 	if !fileExists(kubeconfig) && fileExists(kubeconfigFromEnv) {
 		kubeconfig = kubeconfigFromEnv
 	}
@@ -183,8 +185,8 @@ func newClusterOM(kubeconfig string, kubeconfigFromEnv string, namespace string)
 	}
 
 	return &clusterOM{
-		kubeClient: kubeClient,
-		namespace:  namespace,
+		kubeClient:          kubeClient,
+		kubernetesNamespace: kubernetesNamespace,
 	}, nil
 }
 
@@ -194,9 +196,9 @@ func createZygote(m *testing.M) (OM, error) {
 		log.Fatalf("cannot get current user, %s", err)
 	}
 	kubeconfig := flag.String("kubeconfig", filepath.Join(u.HomeDir, ".kube", "config"), "Kubernetes configuration file")
-	namespace := flag.String("namespace", "open-match", "Open Match Namespace")
+	kubernetesNamespace := flag.String("kubernetes-namespace", "open-match", "Open Match Namespace")
 	kubeconfigFromEnv := os.Getenv("KUBECONFIG")
 
 	flag.Parse()
-	return newClusterOM(*kubeconfig, kubeconfigFromEnv, *namespace)
+	return newClusterOM(*kubeconfig, kubeconfigFromEnv, *kubernetesNamespace)
 }

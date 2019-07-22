@@ -35,11 +35,12 @@ import (
 )
 
 type inmemoryOM struct {
-	mainTc *rpcTesting.TestContext
-	mmfTc  *rpcTesting.TestContext
-	evalTc *rpcTesting.TestContext
-	t      *testing.T
-	mc     *util.MultiClose
+	mainTc             *rpcTesting.TestContext
+	mmfTc              *rpcTesting.TestContext
+	evalTc             *rpcTesting.TestContext
+	t                  *testing.T
+	mc                 *util.MultiClose
+	openMatchNamespace string
 }
 
 func (iom *inmemoryOM) withT(t *testing.T) OM {
@@ -48,11 +49,12 @@ func (iom *inmemoryOM) withT(t *testing.T) OM {
 	mmfTc := createMatchFunctionForTest(t, mainTc)
 
 	om := &inmemoryOM{
-		mainTc: mainTc,
-		mmfTc:  mmfTc,
-		evalTc: evalTc,
-		t:      t,
-		mc:     util.NewMultiClose(),
+		mainTc:             mainTc,
+		mmfTc:              mmfTc,
+		evalTc:             evalTc,
+		t:                  t,
+		mc:                 util.NewMultiClose(),
+		openMatchNamespace: mustNamespace(t),
 	}
 	return om
 }
@@ -100,7 +102,11 @@ func (iom *inmemoryOM) HealthCheck() error {
 }
 
 func (iom *inmemoryOM) Context() context.Context {
-	return iom.mainTc.Context()
+	ctx, err := util.AppendOpenMatchNamespace(iom.mainTc.Context(), iom.openMatchNamespace)
+	if err != nil {
+		panic(err)
+	}
+	return ctx
 }
 
 func (iom *inmemoryOM) cleanup() {
@@ -142,6 +148,7 @@ func createMinimatchForTest(t *testing.T, evalTc *rpcTesting.TestContext) *rpcTe
 	cfg.Set("api.evaluator.hostname", evalTc.GetHostname())
 	cfg.Set("api.evaluator.grpcport", evalTc.GetGRPCPort())
 	cfg.Set("api.evaluator.httpport", evalTc.GetHTTPPort())
+	cfg.Set("logging.rpc", true)
 	cfg.Set("synchronizer.enabled", true)
 	cfg.Set(rpc.ConfigNameEnableRPCLogging, *testOnlyEnableRPCLoggingFlag)
 	cfg.Set(telemetry.ConfigNameEnableMetrics, *testOnlyEnableMetrics)

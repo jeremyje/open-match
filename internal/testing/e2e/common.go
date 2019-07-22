@@ -21,6 +21,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/google/uuid"
 	pb "open-match.dev/open-match/pkg/pb"
 )
 
@@ -73,4 +74,13 @@ func RunMain(m *testing.M) {
 	}()
 	zygote = z
 	exitCode = m.Run()
+}
+
+func mustNamespace(t *testing.T) string {
+	u, err := uuid.NewRandom()
+	if err != nil {
+		panic(err)
+	}
+
+	return t.Name() + "-" + u.String()
 }

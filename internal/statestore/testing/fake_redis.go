@@ -22,12 +22,27 @@ import (
 	"open-match.dev/open-match/internal/statestore"
 )
 
+var (
+	globalRedis *miniredis.Miniredis
+)
+
+func init() {
+	r, err := miniredis.Run()
+	if err != nil {
+		panic(err)
+	}
+	globalRedis = r
+}
+
 // New creates a new in memory Redis instance for testing.
 func New(t *testing.T, cfg config.Mutable) func() {
-	mredis, err := miniredis.Run()
-	if err != nil {
-		t.Fatalf("failed to create miniredis, %v", err)
-	}
+	/*
+		mredis, err := miniredis.Run()
+		if err != nil {
+			t.Fatalf("failed to create miniredis, %v", err)
+		}
+	*/
+	mredis := globalRedis
 	cfg.Set("redis.hostname", mredis.Host())
 	cfg.Set("redis.port", mredis.Port())
 	cfg.Set("redis.pool.maxIdle", PoolMaxIdle)
@@ -40,10 +55,12 @@ func New(t *testing.T, cfg config.Mutable) func() {
 	cfg.Set("backoff.multiplier", Multiplier)
 	cfg.Set("backoff.maxInterval", MaxInterval)
 	cfg.Set("backoff.maxElapsedTime", MaxElapsedTime)
-
-	return func() {
-		mredis.Close()
-	}
+	/*
+		return func() {
+			mredis.Close()
+		}
+	*/
+	return func() {}
 }
 
 // NewStoreServiceForTesting creates a new statestore service for testing

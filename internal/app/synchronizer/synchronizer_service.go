@@ -16,24 +16,39 @@ package synchronizer
 
 import (
 	"context"
+	"sync"
 
 	"github.com/rs/xid"
 	"github.com/sirupsen/logrus"
 	"open-match.dev/open-match/internal/config"
 	ipb "open-match.dev/open-match/internal/pb"
 	"open-match.dev/open-match/internal/statestore"
+	"open-match.dev/open-match/internal/util"
 )
 
 // The service implementing the Synchronizer API that synchronizes the evaluation
 // of proposals from Match functions.
 type synchronizerService struct {
-	state *synchronizerState
+	scm       sync.Map
+	generator func(string) *synchronizerState
 }
 
 func newSynchronizerService(cfg config.View, eval evaluator, store statestore.Service) *synchronizerService {
 	return &synchronizerService{
-		state: newSynchronizerState(cfg, eval, store),
+		generator: func(namespace string) *synchronizerState {
+			return newSynchronizerState(cfg, eval, store, namespace)
+		},
 	}
+}
+
+func (s *synchronizerService) getSynchronizerState(ctx context.Context) *synchronizerState {
+	namespace := util.GetOpenMatchNamespace(ctx)
+	syncContext, _ := s.scm.LoadOrStore(namespace, s.generator(namespace))
+	concrete, ok := syncContext.(*synchronizerState)
+	if !ok {
+		panic("internal error")
+	}
+	return concrete
 }
 
 // Register associates this request with the current synchronization cycle and
@@ -41,7 +56,7 @@ func newSynchronizerService(cfg config.View, eval evaluator, store statestore.Se
 // identifier back in the evaluation request. This enables synchronizer to
 // identify stale evaluation requests belonging to a prior cycle.
 func (s *synchronizerService) Register(ctx context.Context, req *ipb.RegisterRequest) (*ipb.RegisterResponse, error) {
-	syncState := s.state
+	syncState := s.getSynchronizerState(ctx)
 	// Registration calls are only permitted if the synchronizer is idle or in
 	// registration state. If the synchronizer is in any other state, the
 	// registration call blocks on the idle condition. This condition is broadcasted
@@ -83,8 +98,7 @@ func (s *synchronizerService) Register(ctx context.Context, req *ipb.RegisterReq
 //  end of the cycle, the user defined evaluation method is triggered and the
 // matches accepted by it are returned as results.
 func (s *synchronizerService) EvaluateProposals(ctx context.Context, req *ipb.EvaluateProposalsRequest) (*ipb.EvaluateProposalsResponse, error) {
-	syncState := s.state
-
+	syncState := s.getSynchronizerState(ctx)
 	logger.WithFields(logrus.Fields{
 		"id":        req.GetId(),
 		"proposals": getMatchIds(req.GetMatches()),

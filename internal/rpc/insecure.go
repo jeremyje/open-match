@@ -39,11 +39,17 @@ type insecureServer struct {
 	httpServer   *http.Server
 }
 
+func matcherFunc(key string) (string, bool) {
+	v, ok := runtime.DefaultHeaderMatcher(key)
+	serverLogger.Infof("matchFunc(%s) => %s, %t", key, v, ok)
+	return v, ok
+}
+
 func (s *insecureServer) start(params *ServerParams) (func(), error) {
 	var serverStartWaiter sync.WaitGroup
 
 	s.httpMux = params.ServeMux
-	s.proxyMux = runtime.NewServeMux()
+	s.proxyMux = runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(matcherFunc), runtime.WithOutgoingHeaderMatcher(matcherFunc))
 
 	// Configure the gRPC server.
 	grpcListener, err := s.grpcLh.Obtain()

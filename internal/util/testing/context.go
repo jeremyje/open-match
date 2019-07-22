@@ -18,13 +18,13 @@ package testing
 import (
 	"context"
 	"testing"
-)
 
-type contextTestKey string
+	"open-match.dev/open-match/internal/util"
+)
 
 // NewContext returns a context appropriate for calling a gRPC service that
 // is not hosted on a cluster or in Minimatch, (ie: tests not in test/e2e/).
 // For those tests use OM.Context() method.
 func NewContext(t *testing.T) context.Context {
-	return context.WithValue(context.Background(), contextTestKey("testing.T"), t)
+	return util.NewNamespacedContext(util.RandomNamespace(t.Name()))
 }

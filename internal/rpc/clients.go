@@ -15,6 +15,7 @@
 package rpc
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -25,10 +26,10 @@ import (
 	"strings"
 	"time"
 
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	"go.opencensus.io/plugin/ocgrpc"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_retry "github.com/grpc-ecosystem/go-grpc-middleware/retry"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -37,6 +38,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"open-match.dev/open-match/internal/config"
 	"open-match.dev/open-match/internal/telemetry"
+	"open-match.dev/open-match/internal/util"
 )
 
 const (
@@ -261,7 +263,16 @@ func HTTPClientFromParams(params *ClientParams) (*http.Client, string, error) {
 		})
 	}
 
+	attachTransport(httpClient, func(transport http.RoundTripper) http.RoundTripper {
+		return &omHTTP{
+			transport: transport,
+		}
+	})
 	return httpClient, baseURL, nil
+}
+
+func logEverythingFromClient(_ context.Context, _ string) bool {
+	return true
 }
 
 func newGRPCDialOptions(enableMetrics bool, enableRPCLogging bool) []grpc.DialOption {
@@ -276,8 +287,8 @@ func newGRPCDialOptions(enableMetrics bool, enableRPCLogging bool) []grpc.DialOp
 			"app":       "openmatch",
 			"component": "grpc.client",
 		})
-		si = append(si, grpc_logrus.StreamClientInterceptor(grpcLogger))
-		ui = append(ui, grpc_logrus.UnaryClientInterceptor(grpcLogger))
+		si = append(si, grpc_logrus.PayloadStreamClientInterceptor(grpcLogger, logEverythingFromClient))
+		ui = append(ui, grpc_logrus.PayloadUnaryClientInterceptor(grpcLogger, logEverythingFromClient))
 	}
 	opts := []grpc.DialOption{
 		grpc.WithStreamInterceptor(grpc_middleware.ChainStreamClient(si...)),
@@ -291,6 +302,21 @@ func newGRPCDialOptions(enableMetrics bool, enableRPCLogging bool) []grpc.DialOp
 
 func toAddress(hostname string, port int) string {
 	return fmt.Sprintf("%s:%d", hostname, port)
+}
+
+type omHTTP struct {
+	transport http.RoundTripper
+}
+
+func (c *omHTTP) RoundTrip(req *http.Request) (*http.Response, error) {
+	ctx := req.Context()
+	ns := util.GetOpenMatchNamespace(ctx)
+	if len(ns) > 0 {
+		req.Header.Add(util.MetadataNameOpenMatchNamespaceHTTPHeader, ns)
+	} else {
+		clientLogger.Infof("no context ns %+v", ctx)
+	}
+	return c.transport.RoundTrip(req)
 }
 
 type loggingHTTPClient struct {

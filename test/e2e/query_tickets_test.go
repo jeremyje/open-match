@@ -30,6 +30,10 @@ import (
 	"open-match.dev/open-match/pkg/pb"
 )
 
+var (
+	queryTicketsEmptyPreAction = func(_ context.Context, _ pb.FrontendClient, _ *testing.T) {}
+)
+
 func TestQueryTickets(t *testing.T) {
 	tests := []struct {
 		description   string
@@ -150,10 +154,10 @@ func TestQueryTickets(t *testing.T) {
 
 				om, closer := e2e.New(t)
 				defer closer()
+				ctx := om.Context()
 				fe := om.MustFrontendGRPC()
 				mml := om.MustMmLogicGRPC()
 				pageCounts := 0
-				ctx := om.Context()
 
 				test.preAction(ctx, fe, t)
 

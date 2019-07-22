@@ -147,7 +147,6 @@ func TestDoGetAssignments(t *testing.T) {
 			wg.Add(len(test.wantAssignments))
 			store, closer := statestoreTesting.NewStoreServiceForTesting(t, viper.New())
 			defer closer()
-
 			ctx := utilTesting.NewContext(t)
 
 			gotAssignments := []*pb.Assignment{}

@@ -18,6 +18,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+	"time"
+
 	miniredis "github.com/alicebob/miniredis/v2"
 	"github.com/rs/xid"
 	"github.com/spf13/viper"
@@ -30,8 +33,6 @@ import (
 	utilTesting "open-match.dev/open-match/internal/util/testing"
 	"open-match.dev/open-match/pkg/pb"
 	"open-match.dev/open-match/pkg/structs"
-	"testing"
-	"time"
 )
 
 func TestStatestoreSetup(t *testing.T) {

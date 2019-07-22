@@ -21,7 +21,7 @@ import (
 	"net/http"
 
 	grpc_middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
+	//grpc_logrus "github.com/grpc-ecosystem/go-grpc-middleware/logging/logrus"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_validator "github.com/grpc-ecosystem/go-grpc-middleware/validator"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -34,6 +34,7 @@ import (
 	"open-match.dev/open-match/internal/config"
 	"open-match.dev/open-match/internal/signal"
 	"open-match.dev/open-match/internal/telemetry"
+	"open-match.dev/open-match/internal/util"
 )
 
 const (
@@ -145,6 +146,8 @@ func NewServerParamsFromListeners(grpcLh *ListenerHolder, proxyLh *ListenerHolde
 		handlersForGrpcProxy: []GrpcProxyHandler{},
 		grpcListener:         grpcLh,
 		grpcProxyListener:    proxyLh,
+		enableRPCLogging:     true,
+		enableMetrics:        true,
 	}
 }
 
@@ -274,19 +277,23 @@ func newGRPCServerOptions(params *ServerParams) []grpc.ServerOption {
 	si := []grpc.StreamServerInterceptor{
 		grpc_recovery.StreamServerInterceptor(),
 		grpc_validator.StreamServerInterceptor(),
+		util.MetadataForwardStreamServerInterceptor(util.MetadataNameOpenMatchNamespace, util.MetadataNameOpenMatchNamespaceHTTP),
 	}
 	ui := []grpc.UnaryServerInterceptor{
 		grpc_recovery.UnaryServerInterceptor(),
 		grpc_validator.UnaryServerInterceptor(),
+		util.MetadataForwardUnaryServerInterceptor(util.MetadataNameOpenMatchNamespace, util.MetadataNameOpenMatchNamespaceHTTP),
 	}
-	if params.enableRPCLogging {
-		grpcLogger := logrus.WithFields(logrus.Fields{
-			"app":       "openmatch",
-			"component": "grpc.server",
-		})
-		si = append(si, grpc_logrus.StreamServerInterceptor(grpcLogger))
-		ui = append(ui, grpc_logrus.UnaryServerInterceptor(grpcLogger))
-	}
+	/*
+		if params.enableRPCLogging {
+			grpcLogger := logrus.WithFields(logrus.Fields{
+				"app":       "openmatch",
+				"component": "grpc.server",
+			})
+			si = append(si, grpc_logrus.StreamServerInterceptor(grpcLogger))
+			ui = append(ui, grpc_logrus.UnaryServerInterceptor(grpcLogger))
+		}
+	*/
 
 	if params.enableMetrics {
 		opts = append(opts, grpc.StatsHandler(&ocgrpc.ServerHandler{}))
